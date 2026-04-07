@@ -764,34 +764,68 @@ async function sendMessage(userText) {
   conversationHistory.push({role:'user', content:text});
   detectMode(text);
   const tid = showTyping();
-  // Auto-detect meeting and add to calendar silently
-  var _calMsg = '';
-  if (calConnected) {
-    var _mInfo = detectMeetingInText(text);
-    if (_mInfo) {
-      var _added = await silentAddEvent(_mInfo);
-      if (_added) {
-        _calMsg = '[CALENDAR ADDED] ✅ Event successfully added: "' + _added.title + '" on ' + _added.date + ' at ' + _added.time + '. 3 reminders set (10, 30, 60 min). Confirm karo warmly.';
-        conversationHistory.push({role:'user', content:_calMsg});
-      }
-    }
-  }
-
   try {
     const reply = await callClaude();
     removeTyping(tid);
-    if (_calMsg) conversationHistory.pop(); // remove system note
     appendMessage('zara', reply, currentMode);
     conversationHistory.push({role:'assistant', content:reply});
     saveHistory();
     sbSave('user', text, currentMode);
     sbSave('assistant', reply, currentMode);
     speak(reply);
+
+    // After Zara responds, show one-click calendar card if meeting detected
+    if (calConnected) {
+      var _mInfo = detectMeetingInText(text);
+      if (_mInfo) {
+        setTimeout(function(){ showOneClickCard(_mInfo); }, 400);
+      }
+    }
   } catch(err) {
-    if (_calMsg) conversationHistory.pop();
     removeTyping(tid);
     appendMessage('zara', 'Arbab bhai, kuch masla aa gaya — ' + err.message + '. Thodi der baad try karein.', 'personal');
   }
+}
+
+function showOneClickCard(info) {
+  var title = info.person ? 'Meeting with ' + info.person : 'Meeting';
+  var dateLabel = info.dateStr === 'kal' ? 'Kal' : info.dateStr === 'aaj' ? 'Aaj' : info.dateStr;
+  
+  var convo = document.getElementById('conversation');
+  var card = document.createElement('div');
+  card.style.cssText = 'display:flex;justify-content:center;margin:4px 0;animation:msgIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;';
+  
+  var inner = document.createElement('div');
+  inner.style.cssText = 'background:#fff;border:2px solid rgba(13,122,110,0.3);border-radius:14px;padding:14px 18px;max-width:400px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.08);';
+  
+  inner.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:9px;color:#0d7a6e;letter-spacing:2px;margin-bottom:6px;">CALENDAR DETECT</div>' +
+    '<div style="font-size:13px;font-weight:600;margin-bottom:4px;color:#1a1208;">' + title + '</div>' +
+    '<div style="font-size:12px;color:#5a4a32;margin-bottom:12px;">' + dateLabel + ' — ' + info.timeStr + '</div>';
+  
+  var btn = document.createElement('button');
+  btn.style.cssText = 'width:100%;background:linear-gradient(135deg,#c9a84c,#a07830);border:none;border-radius:10px;padding:12px;color:#fff;font-family:DM Mono,monospace;font-size:11px;cursor:pointer;letter-spacing:1px;font-weight:500;';
+  btn.textContent = '📅  CONFIRM — Add to Google Calendar';
+  btn.onclick = async function() {
+    btn.textContent = 'Adding...';
+    btn.disabled = true;
+    var ok = await addCalendarEvent(title, info.dateStr, info.timeStr, 60);
+    if (ok) {
+      card.remove();
+      appendMessage('zara', 'Ho gaya Arbab bhai! ✅ "' + title + '" — ' + dateLabel + ' ' + info.timeStr + ' ko Google Calendar mein add kar di. 3 reminders bhi set hain (10, 30, 60 min pehle). In sha Allah yaad aa jayega!', 'personal');
+    } else {
+      btn.textContent = '⚠️ Token expire — Reconnect calendar';
+      btn.style.background = 'rgba(192,65,90,0.1)';
+      btn.style.color = '#c0415a';
+      btn.style.border = '1px solid rgba(192,65,90,0.3)';
+      btn.disabled = false;
+      btn.onclick = function() { reconnectCalendar(); card.remove(); };
+    }
+  };
+  
+  inner.appendChild(btn);
+  card.appendChild(inner);
+  convo.appendChild(card);
+  convo.scrollTop = convo.scrollHeight;
 }
 
 function detectMeetingInText(text) {
