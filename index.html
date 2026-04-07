@@ -643,8 +643,12 @@ function saveSetup() {
   document.getElementById('setup-overlay').classList.add('hidden');
   if (email && document.getElementById('email-notif')) document.getElementById('email-notif').value = email;
   requestNotificationPermission();
-  loadHistory();
   loadSupabase();
+  // Save API key to Supabase after loading it
+  setTimeout(function() {
+    saveSettingsToSupabase(key, email);
+  }, 2000);
+  loadHistory();
   loadGoogleAPIs();
   setTimeout(openingGreeting, 800);
 }
@@ -700,6 +704,37 @@ function loadSupabase() {
 async function sbSave(role, content, mode) {
   if (!sb) return;
   try { await sb.from('conversations').insert({role, content, mode, created_at: new Date().toISOString()}); } catch(e) {}
+}
+
+async function saveSettingsToSupabase(key, email) {
+  if (!sb) return;
+  try {
+    await sb.from('settings').upsert({
+      id: 'arbab',
+      api_key: key,
+      email: email || '',
+      updated_at: new Date().toISOString()
+    });
+  } catch(e) {}
+}
+
+async function loadSettingsFromSupabase() {
+  if (!sb) return false;
+  try {
+    const { data } = await sb.from('settings').select('*').eq('id', 'arbab').single();
+    if (data && data.api_key && data.api_key.startsWith('sk-ant-')) {
+      apiKey = data.api_key;
+      localStorage.setItem('zara_api_key', data.api_key);
+      if (data.email) {
+        userEmail = data.email;
+        localStorage.setItem('zara_email', data.email);
+        const en = document.getElementById('email-notif');
+        if (en) en.value = data.email;
+      }
+      return true;
+    }
+  } catch(e) {}
+  return false;
 }
 
 // ════════════════════════
