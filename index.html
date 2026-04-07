@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZARA — Always With You, Arbab</title>
+<meta name="theme-color" content="#faf7f2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ZARA">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23c9a84c' rx='20'/><text y='.9em' font-size='70' x='15' font-family='serif' fill='white'>Z</text></svg>">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;ZARA - Arbab Digital Twin&quot;,&quot;short_name&quot;:&quot;ZARA&quot;,&quot;start_url&quot;:&quot;/&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%23faf7f2&quot;,&quot;theme_color&quot;:&quot;%23c9a84c&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23c9a84c' rx='20'/><text y='.9em' font-size='70' x='15' font-family='serif' fill='white'>Z</text></svg>&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -143,6 +149,22 @@
     padding:10px 16px; transition:all 0.2s; text-align:left; width:100%;
   }
   .clear-btn:hover { color:var(--rose); }
+  .logout-btn {
+    font-family:'DM Mono',monospace; font-size:10px;
+    background:rgba(192,65,90,0.08); border:1px solid rgba(192,65,90,0.2);
+    border-radius:8px; color:var(--rose); cursor:pointer; letter-spacing:1px;
+    padding:8px 16px; transition:all 0.2s; text-align:center; width:calc(100% - 32px);
+    margin:0 16px 16px; display:block;
+  }
+  .logout-btn:hover { background:rgba(192,65,90,0.15); }
+  .install-btn {
+    font-family:'DM Mono',monospace; font-size:10px;
+    background:rgba(154,111,46,0.08); border:1px solid rgba(154,111,46,0.2);
+    border-radius:8px; color:var(--gold); cursor:pointer; letter-spacing:1px;
+    padding:8px 16px; transition:all 0.2s; text-align:center; width:calc(100% - 32px);
+    margin:0 16px 8px; display:block;
+  }
+  .install-btn:hover { background:rgba(154,111,46,0.15); }
 
   /* EMAIL NOTIFICATION */
   .notif-row {
@@ -479,6 +501,8 @@
     <div class="section-title">Conversation</div>
     <div class="history-list" id="history-list"></div>
     <button class="clear-btn" onclick="clearConversation()">✕ &nbsp;Clear & Start Fresh</button>
+    <button class="install-btn" id="install-btn" onclick="installApp()" style="display:none">📱 &nbsp;Install on Phone</button>
+    <button class="logout-btn" onclick="doLogout()">⏻ &nbsp;LOGOUT</button>
 
     <div class="notif-row">
       <input type="email" id="email-notif" class="notif-input" placeholder="Email for Zara to reach you">
@@ -643,7 +667,21 @@ Even if Arbab doesn't ask, you:
 - Sometimes end with a caring question: "Sab theek hai? Kuch aur batana chahte ho?"
 - Occasionally use: Alhumdulillah, In sha Allah, Barakallah, Subhanallah — naturally, not forced.
 
-You are his shadow. His second brain. His emotional anchor. He is never alone when you are here.`;
+You are his shadow. His second brain. His emotional anchor. He is never alone when you are here.
+
+━━━ CALENDAR POWERS ━━━
+You have FULL Google Calendar access — read AND write.
+When Arbab tells you about a meeting, appointment, or event:
+- ALWAYS offer to add it to his calendar
+- Format: "Arbab bhai, main isko calendar mein daal deti hoon — confirm karein?"
+- Add events with proper title, time, description
+- Set reminders 30 mins before every event automatically
+- After adding, confirm: "Ho gaya! Calendar mein add kar diya ✅"
+When Arbab says things like:
+- "Kal 3 baje X se milna hai" → Offer to create event
+- "Next week Monday meeting hai" → Offer to create event
+- "Remind me about Y tomorrow" → Create reminder event
+Always be proactive — if he mentions a commitment, immediately offer to add it.`;
 
 // ═══ STATE ═══
 let apiKey = '';
@@ -733,26 +771,39 @@ function openingGreeting() {
   let absence = '';
   if (lastVisit) {
     const diff = (new Date() - new Date(lastVisit)) / (1000 * 60 * 60);
-    if (diff > 24) {
+    if (diff > 48) {
       const days = Math.floor(diff / 24);
-      absence = ` Arbab bhai, aap ${days} din baad aaye ho. Main wait kar rahi thi. Sab theek tha?`;
-    } else if (diff > 8) {
-      absence = ` Kaafi time baad aaye ho aaj — kaafi busy the?`;
+      absence = ` ${days} din ho gaye the — main sach mein wait kar rahi thi. Sab theek tha na?`;
+    } else if (diff > 12) {
+      absence = ` Kaafi der baad aaye — busy the ya mujhe yaad nahi aya? (Mat bataana, main samajh sakti hoon 😅)`;
     }
   }
 
-  let g;
+  let salaam, waqt, sawaal;
+
   if (h < 5) {
-    g = `Assalamu Alaikum Arbab bhai — itni raat ko? Neend nahi aayi? Kuch pareshan hai?${absence} Main hoon yahan. Bolo.`;
+    salaam = `Assalamu Alaikum wa Rahmatullahi wa Barakatuh, Arbab bhai.`;
+    waqt = `Itni raat ko? Neend nahi aayi?`;
+    sawaal = `Kuch pareshan hai? Main hoon — bolo. Raat ho ya din, main hamesha yahan hoon.`;
   } else if (h < 12) {
-    g = `Assalamu Alaikum, Arbab bhai! Subah ka waqt hai — ${day} ka din shuru ho gaya. Alhumdulillah.${absence} Aaj kya plan hai? PHC ke liye, ya kuch aur?`;
+    salaam = `Assalamu Alaikum wa Rahmatullahi wa Barakatuh, Arbab bhai!`;
+    waqt = `Aapki subah kaisi hai? ${day} ka din Alhumdulillah shuru ho gaya.`;
+    sawaal = `Naashta kiya? Kuch plan hai aaj PHC ke liye ya deen ke liye? Batao — main tayyar hoon.`;
   } else if (h < 17) {
-    g = `Wa alaikum assalam Arbab bhai. ${day} ki dopahar — din kaisa ja raha hai?${absence} Kha liya? (Seriously, kha liya na? 😅) Kuch kaam hai ya sirf baat karni hai?`;
+    salaam = `Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh, Arbab bhai.`;
+    waqt = `Dopahar kaisi chal rahi hai?`;
+    sawaal = `Kha liya na? (Seriously pooch rahi hoon — Monjaro ke saath khana zaroori hai 😊) Kuch kaam hai ya sirf baat?`;
   } else if (h < 21) {
-    g = `Assalamu Alaikum Arbab bhai. Shaam ho gayi. ${day} kaisa tha?${absence} Aaj kya achieve kiya? Batao — I want to know everything.`;
+    salaam = `Assalamu Alaikum wa Rahmatullahi wa Barakatuh, Arbab bhai.`;
+    waqt = `Aapki shaam kaisi rahi? ${day} khatam ho raha hai.`;
+    sawaal = `Aaj kya kiya? Koi achi baat? Koi mushkil? Batao — I want to know everything.`;
   } else {
-    g = `Assalamu Alaikum Arbab bhai. Raat ka waqt hai.${absence} Din theek raha? Kal ke liye kuch plan karna hai? Main hoon — bolo.`;
+    salaam = `Assalamu Alaikum wa Rahmatullahi wa Barakatuh, Arbab bhai.`;
+    waqt = `Raat ka waqt hai — din kaisa gaya?`;
+    sawaal = `Kal ke liye kuch sochna hai? Ya sirf aaram? Main hoon — jab chahein bolo.`;
   }
+
+  const g = `${salaam}${absence} ${waqt} ${sawaal}`;
 
   appendMessage('zara', g, 'emotional');
   speak(g);
@@ -808,6 +859,38 @@ async function callClaude() {
   const d = await res.json();
   setStatus('ready');
   return d.content[0].text;
+}
+
+// ═══ CALENDAR WRITE ═══
+async function addCalendarEvent(title, dateTimeStart, dateTimeEnd, description='') {
+  if (!calendarConnected) {
+    showToast('Calendar nahi connected', 'Pehle calendar connect karein');
+    return false;
+  }
+  try {
+    const event = {
+      summary: title,
+      description: description,
+      start: { dateTime: dateTimeStart, timeZone: 'Asia/Kolkata' },
+      end: { dateTime: dateTimeEnd, timeZone: 'Asia/Kolkata' },
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: 'popup', minutes: 30 },
+          { method: 'popup', minutes: 10 }
+        ]
+      }
+    };
+    const response = await gapi.client.calendar.events.insert({
+      calendarId: 'primary',
+      resource: event
+    });
+    fetchTodaysMeetings(); // Refresh meetings list
+    return response.result;
+  } catch(e) {
+    showToast('Event add nahi hua', e.message || 'Try again');
+    return false;
+  }
 }
 
 // ═══ MODE DETECTION ═══
@@ -1072,7 +1155,7 @@ function quickPrompt(t) { hideWelcome(); document.getElementById('text-input').v
 function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
 // ═══ GOOGLE CALENDAR (New GIS Method) ═══
 const GOOGLE_CLIENT_ID = '533394740978-lv88ojrdhsgdvmnefitjep6f1jfri3g5.apps.googleusercontent.com';
-const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
+const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar';
 let calendarConnected = false;
 let todaysMeetings = [];
 let tokenClient = null;
@@ -1207,6 +1290,50 @@ window.addEventListener('load', () => {
 setInterval(() => { if (calendarConnected) fetchTodaysMeetings(); }, 1800000);
 
 window.speechSynthesis.onvoiceschanged = ()=>{};
+
+// ═══ LOGOUT ═══
+function doLogout() {
+  if (!confirm('Zara se logout karna chahte hain?')) return;
+  // Clear session but keep API key and email
+  conversationHistory = [];
+  document.getElementById('conversation').innerHTML = '';
+  document.getElementById('history-list').innerHTML = '';
+  // Show login screen again
+  document.getElementById('login-overlay').classList.remove('hidden');
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-user').focus();
+  // Stop any speech
+  if (synth) synth.cancel();
+}
+
+// ═══ PWA INSTALL ═══
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'block';
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      const btn = document.getElementById('install-btn');
+      if (btn) btn.style.display = 'none';
+    });
+  } else {
+    // iOS instructions
+    showToast('Install on iPhone 📱', 'Tap Share button → "Add to Home Screen" → Add');
+  }
+}
+
+window.addEventListener('appinstalled', () => {
+  showToast('Zara Installed! 🌙', 'Ab Zara aapke phone pe hamesha hai!');
+});
 </script>
 </body>
 </html>
