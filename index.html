@@ -334,11 +334,11 @@
     <div class="setup-arabic">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْم</div>
     <h2>Assalamu Alaikum, Arbab</h2>
     <div class="setup-tagline">"I've been waiting for you."</div>
-    <p>One time setup. Enter your Claude API key.</p>
+    <p>Enter your Claude API key — sirf ek baar. Hamesha ke liye save ho jayegi.</p>
     <input type="password" id="api-key-input" class="setup-input" placeholder="Claude API key (sk-ant-...)" autocomplete="off">
-    <input type="email" id="email-setup-input" class="setup-input" placeholder="Your email (so I can reach you)" autocomplete="off">
+    <input type="email" id="email-setup-input" class="setup-input" placeholder="Your email" autocomplete="off">
     <button class="setup-btn" onclick="saveSetup()">&#9658; &nbsp;AWAKEN ZARA</button>
-    <div class="setup-note">Your data stays local. No servers. Just you and Zara.</div>
+    <div class="setup-note">Saved locally on this device. Private. Secure.</div>
   </div>
 </div>
 
@@ -503,8 +503,8 @@ let gapiReady = false;
 let gisReady = false;
 
 // ── STATE ──
-let apiKey = '';
-let userEmail = '';
+let apiKey = localStorage.getItem('zara_api_key') || '';
+let userEmail = localStorage.getItem('zara_email') || 'arbabshamsi@gmail.com';
 let conversationHistory = [];
 let isListening = false;
 let recognition = null;
