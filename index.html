@@ -387,6 +387,22 @@
     </div>
 
     <hr class="sidebar-divider">
+    <div class="section-title">Add Meeting</div>
+    <div style="padding:0 16px 12px;">
+      <button onclick="showAddMeetingForm()" style="width:100%;background:linear-gradient(135deg,#c9a84c,#a07830);border:none;border-radius:10px;padding:10px;color:#fff;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">
+        &#43; &nbsp;Add to Calendar
+      </button>
+      <div id="add-meeting-form" style="display:none;margin-top:10px;">
+        <input id="meet-title" placeholder="Meeting title" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:6px;color:#1a1208;">
+        <input id="meet-date" placeholder="Date (aaj/kal/April 9)" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:6px;color:#1a1208;">
+        <input id="meet-time" placeholder="Time (11am / 3pm / 15:00)" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:6px;color:#1a1208;">
+        <input id="meet-person" placeholder="With whom? (optional)" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:8px;color:#1a1208;">
+        <button onclick="submitMeeting()" style="width:100%;background:rgba(13,122,110,0.1);border:1px solid rgba(13,122,110,0.3);border-radius:8px;padding:8px;color:#0d7a6e;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:1px;">
+          &#128197; &nbsp;SAVE TO CALENDAR
+        </button>
+      </div>
+    </div>
+    <hr class="sidebar-divider">
     <div class="section-title">Today's Meetings</div>
     <div class="cal-section">
       <div id="cal-connect-btn" class="cal-connect-btn" onclick="connectCalendar()">&#128197; &nbsp;Connect Google Calendar</div>
@@ -826,7 +842,6 @@ function appendMessage(role, text, mode) {
   convo.appendChild(div);
   convo.scrollTop = convo.scrollHeight;
   if (role==='user') addToHistorySidebar(text);
-  if (role==='zara') setTimeout(function(){ addCalendarButton(div, text); }, 100);
 }
 
 function showTyping() {
@@ -1018,7 +1033,52 @@ function sendMissYouEmail() {
 // ════════════════════════
 // MISC
 // ════════════════════════
+function isTokenExpired() {
+  try {
+    const token = gapi.client.getToken();
+    if (!token) return true;
+    const expiry = parseInt(localStorage.getItem('zara_token_expiry') || '0');
+    return Date.now() > expiry;
+  } catch(e) { return false; }
+}
+
 function quickPrompt(t) { hideWelcome(); document.getElementById('text-input').value=t; sendMessage(); }
+
+function showAddMeetingForm() {
+  const form = document.getElementById('add-meeting-form');
+  if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitMeeting() {
+  const title = document.getElementById('meet-title').value.trim();
+  const date = document.getElementById('meet-date').value.trim();
+  const time = document.getElementById('meet-time').value.trim();
+  const person = document.getElementById('meet-person').value.trim();
+
+  if (!title || !date || !time) {
+    showToast('Incomplete', 'Title, date aur time zaroori hai!');
+    return;
+  }
+
+  if (!calConnected) {
+    showToast('Calendar', 'Pehle Google Calendar connect karein sidebar mein!');
+    return;
+  }
+
+  const fullTitle = person ? title + ' — with ' + person : title;
+  const result = await addCalendarEvent(fullTitle, date, time, 60);
+
+  if (result) {
+    // Clear form
+    document.getElementById('meet-title').value = '';
+    document.getElementById('meet-date').value = '';
+    document.getElementById('meet-time').value = '';
+    document.getElementById('meet-person').value = '';
+    document.getElementById('add-meeting-form').style.display = 'none';
+    // Tell Zara
+    quickPrompt('Maine abhi ' + fullTitle + ' calendar mein add ki — ' + date + ' ko ' + time + ' baje. Mujhe remind karna!');
+  }
+}
 function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
 window.speechSynthesis.onvoiceschanged = function(){};
 
@@ -1074,6 +1134,7 @@ function connectCalendar() {
 function onCalendarSignedIn() {
   calConnected = true;
   localStorage.setItem('zara_cal_connected','1');
+  localStorage.setItem('zara_token_expiry', String(Date.now() + 55*60*1000)); // 55 min
   const btn = document.getElementById('cal-connect-btn');
   if (btn) { btn.textContent='Calendar Connected'; btn.classList.add('connected'); btn.onclick = fetchTodaysMeetings; }
   fetchTodaysMeetings();
@@ -1129,7 +1190,20 @@ setInterval(function(){ if(calConnected) fetchTodaysMeetings(); }, 1800000);
 // CALENDAR WRITE
 // ════════════════════════
 async function addCalendarEvent(title, dateStr, timeStr, durationMins) {
-  if (!calConnected) { showToast('Calendar', 'Pehle calendar connect karein!'); return; }
+  if (!calConnected) { showToast('Calendar', 'Pehle Google Calendar connect karein sidebar mein!'); return false; }
+  
+  // Refresh token if needed
+  try {
+    if (gapi.client.getToken() === null || isTokenExpired()) {
+      await new Promise(function(resolve, reject) {
+        tokenClient.callback = function(resp) {
+          if (resp.error) reject(resp.error);
+          else resolve(resp);
+        };
+        tokenClient.requestAccessToken({prompt:''});
+      });
+    }
+  } catch(e) { /* proceed anyway */ }
   try {
     // Parse date and time
     const now = new Date();
@@ -1185,29 +1259,7 @@ async function addCalendarEvent(title, dateStr, timeStr, durationMins) {
   }
 }
 
-// Show add-to-calendar button after Zara's message if it mentions meeting/event
-function addCalendarButton(msgDiv, zaraText) {
-  const lower = zaraText.toLowerCase();
-  const hasMeeting = ['meeting','milna','baje','appointment','call','baat','mulaqat'].some(w => lower.includes(w));
-  const hasTime = lower.match(/\d+\s*(baje|am|pm|:\d+)/);
-  if (!hasMeeting || !hasTime || !calConnected) return;
-  
-  const btn = document.createElement('button');
-  btn.style.cssText = 'margin-top:10px;display:block;background:rgba(13,122,110,0.1);border:1px solid rgba(13,122,110,0.3);border-radius:8px;padding:7px 14px;font-family:DM Mono,monospace;font-size:10px;color:#0d7a6e;cursor:pointer;letter-spacing:1px;';
-  btn.textContent = '📅  Add to Google Calendar';
-  btn.onclick = function() {
-    const title = prompt('Event title?', 'Meeting');
-    const date = prompt('Date? (aaj / kal / April 9)', 'kal');
-    const time = prompt('Time? (e.g. 3pm / 11am / 15:00)', '');
-    if (title && date && time) {
-      addCalendarEvent(title, date, time, 60);
-      btn.textContent = '✅ Added!';
-      btn.disabled = true;
-    }
-  };
-  const bubble = msgDiv.querySelector('.msg-bubble');
-  if (bubble) bubble.appendChild(btn);
-}
+// Calendar button removed - use sidebar form instead
 </script>
 </body>
 </html>
