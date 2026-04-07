@@ -42,12 +42,19 @@
   }
 
   /* ── OVERLAYS ── */
-  #login-overlay, #setup-overlay {
+  #login-overlay, #setup-overlay, #loading-overlay {
     position:fixed; inset:0; background:rgba(245,240,232,0.97);
     z-index:1000; display:flex; align-items:center; justify-content:center;
     flex-direction:column; gap:20px; padding:32px;
   }
-  #login-overlay.hidden, #setup-overlay.hidden { display:none; }
+  #login-overlay.hidden, #setup-overlay.hidden, #loading-overlay.hidden { display:none; }
+  .loading-spinner {
+    width:50px; height:50px; border-radius:50%;
+    border:3px solid rgba(154,111,46,0.2);
+    border-top-color:var(--gold);
+    animation:spin 1s linear infinite;
+  }
+  .loading-text { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); letter-spacing:2px; }
 
   .setup-card {
     background:#fff; border:1px solid rgba(154,111,46,0.2);
@@ -326,6 +333,12 @@
     <div id="login-error">Wrong credentials. Access denied.</div>
     <button class="setup-btn" onclick="doLogin()">&#9658; &nbsp;ENTER</button>
   </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading-overlay" class="hidden">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">ZARA AA RAHI HAI...</div>
 </div>
 
 <!-- SETUP (first time only) -->
@@ -650,7 +663,19 @@ function saveSetup() {
   }, 2000);
   loadHistory();
   loadGoogleAPIs();
-  setTimeout(openingGreeting, 800);
+  // Save to Supabase in background
+  setTimeout(async function() {
+    try {
+      if (!sb) {
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        await new Promise(function(r){ s.onload=r; document.head.appendChild(s); });
+        sb = window.supabase.createClient(SB_URL, SB_KEY);
+      }
+      await sb.from('settings').upsert({id:'arbab', api_key:key, email:email||''});
+    } catch(e) {}
+  }, 1000);
+  startZara();
 }
 
 function saveEmail() {
@@ -1229,6 +1254,51 @@ function isTokenExpired() {
     const expiry = parseInt(localStorage.getItem('zara_token_expiry') || '0');
     return Date.now() > expiry;
   } catch(e) { return false; }
+}
+
+function startZara() {
+  // Hide all overlays, show app
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('setup-overlay').classList.add('hidden');
+  // Start everything
+  try { const en = document.getElementById('email-notif'); if (en) en.value = userEmail; } catch(e) {}
+  try { updateLastSeenDisplay(); } catch(e) {}
+  try { requestNotificationPermission(); } catch(e) {}
+  try { loadHistory(); } catch(e) {}
+  try { loadGoogleAPIs(); } catch(e) {}
+  localStorage.setItem('zara_last_visit', new Date().toISOString());
+  setTimeout(function(){ try { openingGreeting(); } catch(e) {} }, 800);
+}
+
+function loadSupabaseAndFetchKey() {
+  // Load Supabase script dynamically
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload = async function() {
+    try {
+      sb = window.supabase.createClient(SB_URL, SB_KEY);
+      var res = await sb.from('settings').select('api_key,email').eq('id','arbab').single();
+      if (res.data && res.data.api_key) {
+        apiKey = res.data.api_key;
+        localStorage.setItem('zara_api_key', apiKey);
+        if (res.data.email) {
+          userEmail = res.data.email;
+          localStorage.setItem('zara_email', userEmail);
+        }
+        startZara();
+        return;
+      }
+    } catch(e) {}
+    // Key not found - show setup
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('setup-overlay').classList.remove('hidden');
+  };
+  s.onerror = function() {
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('setup-overlay').classList.remove('hidden');
+  };
+  document.head.appendChild(s);
 }
 
 function quickPrompt(t) { hideWelcome(); document.getElementById('text-input').value=t; sendMessage(); }
