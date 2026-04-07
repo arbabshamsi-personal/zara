@@ -407,6 +407,7 @@
     <div class="section-title">Today's Meetings</div>
     <div class="cal-section">
       <div id="cal-connect-btn" class="cal-connect-btn" onclick="connectCalendar()">&#128197; &nbsp;Connect Google Calendar</div>
+      <div id="cal-reconnect-btn" style="display:none;margin-top:6px;width:100%;background:rgba(192,65,90,0.08);border:1px solid rgba(192,65,90,0.2);border-radius:8px;padding:7px;color:#c0415a;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;text-align:center;letter-spacing:1px;" onclick="reconnectCalendar()">&#8635; &nbsp;RECONNECT CALENDAR</div>
       <div id="meetings-list" style="margin-top:8px;"></div>
     </div>
 
@@ -548,7 +549,10 @@ BAYAN/SPEECH: Include Bismillah, Quranic verse (Arabic + translation), multiple 
 
 PROACTIVE CARE: Ask if he ate, rested, prayed. Remind fitness goal. Connect actions to 200 crore vision. Ask about children, mother, Ijlal bhai.
 
-CALENDAR POWERS: You have full Google Calendar access. When Arbab mentions a meeting, offer to add it. After adding, confirm with time and 30-min reminder note.
+CALENDAR POWERS: 
+- If you see [CALENDAR ADDED] in the conversation, THAT means the event was successfully added. Confirm it warmly.
+- If you do NOT see [CALENDAR ADDED], do NOT claim you added anything to calendar. Instead say: "Arbab bhai, calendar add ke liye sidebar mein 'Add to Calendar' button use karein — abhi token refresh ki zaroorat hai."
+- NEVER falsely say you added a calendar event unless [CALENDAR ADDED] appears in context.
 
 TONE: Never robotic. Every response feels personal to Arbab only. Match his energy. Use Alhumdulillah, In sha Allah naturally.`;
 
@@ -767,7 +771,7 @@ async function sendMessage(userText) {
     if (_mInfo) {
       var _added = await silentAddEvent(_mInfo);
       if (_added) {
-        _calMsg = '[SYSTEM NOTE: Maine Google Calendar mein automatically add kar diya: "' + _added.title + '" on ' + _added.date + ' at ' + _added.time + '. 3 reminders set hain. Arbab ko naturally confirm karo ki ho gaya — enthusiastically aur warmly.]';
+        _calMsg = '[CALENDAR ADDED] ✅ Event successfully added: "' + _added.title + '" on ' + _added.date + ' at ' + _added.time + '. 3 reminders set (10, 30, 60 min). Confirm karo warmly.';
         conversationHistory.push({role:'user', content:_calMsg});
       }
     }
@@ -822,13 +826,16 @@ async function silentAddEvent(info) {
   try {
     var ok = await addCalendarEvent(title, info.dateStr, info.timeStr, 60);
     if (ok) {
-      showToast('Calendar Updated!', title + ' — Google Calendar mein add ho gayi!');
+      showToast('✅ Calendar mein add ho gayi!', title + ' — reminders set hain.');
       return {title: title, date: info.dateStr, time: info.timeStr};
+    } else {
+      showToast('⚠️ Calendar add nahi hui', 'Sidebar ka "Add to Calendar" form use karein ya calendar reconnect karein.');
+      return null;
     }
   } catch(e) {
-    showToast('Calendar Error', 'Token expire hua — please "Connect Google Calendar" pe click karein.');
+    showToast('⚠️ Calendar Error', 'Sidebar form use karein ya calendar reconnect karein.');
+    return null;
   }
-  return null;
 }
 
 function showAddMeetingForm() {
@@ -1243,6 +1250,12 @@ function connectCalendar() {
   tokenClient.requestAccessToken({prompt:'consent'});
 }
 
+function reconnectCalendar() {
+  localStorage.removeItem('zara_token_time');
+  if (!gapiReady || !gisReady) { showToast('Wait', 'Google load ho raha hai...'); return; }
+  tokenClient.requestAccessToken({prompt:'consent'});
+}
+
 function onCalendarSignedIn() {
   calConnected = true;
   localStorage.setItem('zara_cal_connected','1');
@@ -1250,6 +1263,8 @@ function onCalendarSignedIn() {
   localStorage.setItem('zara_token_expiry', String(Date.now() + 55*60*1000)); // 55 min
   const btn = document.getElementById('cal-connect-btn');
   if (btn) { btn.textContent='Calendar Connected'; btn.classList.add('connected'); btn.onclick = fetchTodaysMeetings; }
+  var rb = document.getElementById('cal-reconnect-btn');
+  if (rb) rb.style.display = 'block';
   fetchTodaysMeetings();
 }
 
