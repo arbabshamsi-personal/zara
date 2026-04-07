@@ -758,6 +758,10 @@ async function sendMessage(userText) {
   appendMessage('user', text);
   conversationHistory.push({role:'user', content:text});
   detectMode(text);
+  
+  // Smart meeting detection from user message
+  const meetingInfo = extractMeetingInfo(text);
+  
   const tid = showTyping();
   try {
     const reply = await callClaude();
@@ -768,9 +772,87 @@ async function sendMessage(userText) {
     sbSave('user', text, currentMode);
     sbSave('assistant', reply, currentMode);
     speak(reply);
+    
+    // If meeting detected, show inline confirm button
+    if (meetingInfo && calConnected) {
+      showCalendarConfirm(meetingInfo);
+    }
   } catch(err) {
     removeTyping(tid);
     appendMessage('zara', 'Arbab bhai, kuch masla aa gaya — ' + err.message + '. Thodi der baad try karein.', 'personal');
+  }
+}
+
+// ── SMART MEETING EXTRACTION ──
+function extractMeetingInfo(text) {
+  const t = text.toLowerCase();
+  
+  // Check if it's about a meeting/appointment
+  const meetingWords = ['meeting','milna','milne','baje','appointment','call','mulaqat','miloon','milenge','milunga'];
+  const hasMeeting = meetingWords.some(w => t.includes(w));
+  if (!hasMeeting) return null;
+  
+  // Extract time - matches: 3pm, 3 pm, 3:00pm, 3 baje, kal 3, aaj 11
+  const timePatterns = [
+    { regex: /(\d{1,2}):(\d{2})\s*(am|pm)/i, type: 'hhmm' },
+    { regex: /(\d{1,2})\s*(am|pm)/i, type: 'hampm' },
+    { regex: /(\d{1,2})\s*baje/i, type: 'baje' },
+  ];
+  
+  let timeStr = '';
+  for (const p of timePatterns) {
+    const m = text.match(p.regex);
+    if (m) { timeStr = m[0]; break; }
+  }
+  
+  // Extract date
+  let dateStr = 'aaj';
+  if (t.includes('kal') || t.includes('tomorrow')) dateStr = 'kal';
+  else if (t.includes('aaj') || t.includes('today')) dateStr = 'aaj';
+  else {
+    // Try month day pattern like "April 9" or "9 April"
+    const monthMatch = text.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(\d{1,2})/i);
+    const dayMonthMatch = text.match(/(\d{1,2})\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*/i);
+    if (monthMatch) dateStr = monthMatch[0];
+    else if (dayMonthMatch) dateStr = dayMonthMatch[0];
+  }
+  
+  // Extract person name (after "with"/"se"/"ke saath")
+  let person = '';
+  const withMatch = text.match(/(?:with|se milna|ke saath)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)/i);
+  if (withMatch) person = withMatch[1];
+  
+  if (!timeStr) return null; // Need at least a time
+  
+  return { timeStr, dateStr, person, original: text };
+}
+
+function showCalendarConfirm(info) {
+  const convo = document.getElementById('conversation');
+  const div = document.createElement('div');
+  div.className = 'msg zara';
+  div.style.animation = 'none';
+  
+  const title = info.person ? 'Meeting with ' + info.person : 'Meeting';
+  const dateLabel = info.dateStr === 'kal' ? 'Kal' : info.dateStr === 'aaj' ? 'Aaj' : info.dateStr;
+  
+  div.innerHTML = '<div class="msg-avatar">Z</div><div class="msg-bubble" style="background:#fff;border:1px solid rgba(13,122,110,0.2);">' +
+    '<div style="font-family:DM Mono,monospace;font-size:9px;color:#0d7a6e;letter-spacing:2px;margin-bottom:8px;">CALENDAR DETECT</div>' +
+    '<div style="font-size:13px;margin-bottom:10px;">Arbab bhai, <b>' + title + '</b> — <b>' + dateLabel + '</b> ko <b>' + info.timeStr + '</b>. Calendar mein daal doon?</div>' +
+    '<div style="display:flex;gap:8px;">' +
+    '<button onclick="confirmAddEvent('' + title.replace(/'/g,"\'") + '','' + info.dateStr + '','' + info.timeStr + '',this.parentElement.parentElement.parentElement)" style="background:linear-gradient(135deg,#c9a84c,#a07830);border:none;border-radius:8px;padding:8px 16px;color:#fff;font-family:DM Mono,monospace;font-size:10px;cursor:pointer;letter-spacing:1px;">&#128197; HAA DAAL DO</button>' +
+    '<button onclick="this.parentElement.parentElement.parentElement.remove()" style="background:transparent;border:1px solid rgba(154,111,46,0.3);border-radius:8px;padding:8px 16px;color:#9a6f2e;font-family:DM Mono,monospace;font-size:10px;cursor:pointer;">NAHI</button>' +
+    '</div></div>';
+  
+  convo.appendChild(div);
+  convo.scrollTop = convo.scrollHeight;
+}
+
+async function confirmAddEvent(title, dateStr, timeStr, divToRemove) {
+  divToRemove.remove();
+  const result = await addCalendarEvent(title, dateStr, timeStr, 60);
+  if (result) {
+    appendMessage('zara', 'Ho gaya Arbab bhai! ✅ "' + title + '" — ' + (dateStr==='kal'?'kal':'aaj') + ' ' + timeStr + ' ko calendar mein daal diya. 3 reminders bhi set kar diye — 60, 30 aur 10 minute pehle. In sha Allah time pe yaad aa jayega!', 'personal');
   }
 }
 
