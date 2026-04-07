@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZARA — Always With You, Arbab</title>
-<script src="https://apis.google.com/js/api.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -1071,33 +1070,61 @@ function clearConversation() {
 
 function quickPrompt(t) { hideWelcome(); document.getElementById('text-input').value=t; sendMessage(); }
 function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
-// ═══ GOOGLE CALENDAR ═══
+// ═══ GOOGLE CALENDAR (New GIS Method) ═══
 const GOOGLE_CLIENT_ID = '533394740978-lv88ojrdhsgdvmnefitjep6f1jfri3g5.apps.googleusercontent.com';
-const CALENDAR_SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
 let calendarConnected = false;
 let todaysMeetings = [];
+let tokenClient = null;
+let gapiInited = false;
+let gisInited = false;
 
-function connectCalendar() {
-  gapi.load('client:auth2', initCalendarClient);
+// Init GAPI
+function gapiLoaded() {
+  gapi.load('client', async () => {
+    await gapi.client.init({});
+    await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest');
+    gapiInited = true;
+    maybeAutoConnect();
+  });
 }
 
-function initCalendarClient() {
-  gapi.client.init({
-    clientId: GOOGLE_CLIENT_ID,
-    scope: CALENDAR_SCOPES,
-    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest']
-  }).then(() => {
-    const authInstance = gapi.auth2.getAuthInstance();
-    if (authInstance.isSignedIn.get()) {
+// Init GIS
+function gisLoaded() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: CALENDAR_SCOPE,
+    callback: (resp) => {
+      if (resp.error) {
+        showToast('Calendar Error', resp.error);
+        return;
+      }
       onCalendarSignedIn();
-    } else {
-      authInstance.signIn().then(onCalendarSignedIn).catch(() => {
-        showToast('Calendar Error', 'Could not connect. Try again.');
-      });
     }
-  }).catch(e => {
-    showToast('Calendar Error', e.details || 'Setup error.');
   });
+  gisInited = true;
+  maybeAutoConnect();
+}
+
+function maybeAutoConnect() {
+  if (gapiInited && gisInited && localStorage.getItem('zara_cal_connected') === '1') {
+    fetchTodaysMeetings();
+    calendarConnected = true;
+    const btn = document.getElementById('cal-connect-btn');
+    if (btn) { btn.textContent = '✅  Calendar Connected'; btn.classList.add('connected'); }
+  }
+}
+
+function connectCalendar() {
+  if (!gapiInited || !gisInited) {
+    showToast('Please wait', 'Google loading ho raha hai, thoda ruko...');
+    return;
+  }
+  if (gapi.client.getToken() === null) {
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+  } else {
+    tokenClient.requestAccessToken({ prompt: '' });
+  }
 }
 
 function onCalendarSignedIn() {
@@ -1124,14 +1151,14 @@ function fetchTodaysMeetings() {
     todaysMeetings = events;
     renderMeetings(events);
     if (events.length > 0) informZaraAboutMeetings(events);
-  }).catch(() => showToast('Calendar sync failed', 'Try reconnecting.'));
+  }).catch(() => showToast('Sync failed', 'Calendar refresh nahi hui.'));
 }
 
 function renderMeetings(events) {
   const list = document.getElementById('meetings-list');
   if (!list) return;
   if (events.length === 0) {
-    list.innerHTML = '<div class="no-meetings">No meetings today 😌</div>';
+    list.innerHTML = '<div class="no-meetings">Aaj koi meeting nahi 😌</div>';
     return;
   }
   list.innerHTML = events.map(e => {
@@ -1153,8 +1180,7 @@ function informZaraAboutMeetings(events) {
     const attendees = (e.attendees||[]).filter(a=>!a.self).map(a=>a.displayName||a.email).join(', ');
     return `${e.summary||'Meeting'} at ${time}${attendees?' with '+attendees:''}`;
   }).join('\n');
-
-  const prompt = `[CALENDAR] Arbab bhai ke aaj yeh meetings hain:\n${meetingList}\n\nUnhein warm, caring tarike se remind karo — kaun hai, kab milna hai. Baad mein follow-up bhi remind karna mat bhoolna.`;
+  const prompt = `[CALENDAR] Arbab bhai ke aaj yeh meetings hain:\n${meetingList}\n\nInhein warm caring tarike se remind karo. Time, person, aur follow-up sab mention karo.`;
   conversationHistory.push({ role: 'user', content: prompt });
   const tid = showTyping();
   callClaude().then(reply => {
@@ -1166,24 +1192,18 @@ function informZaraAboutMeetings(events) {
   }).catch(() => removeTyping(tid));
 }
 
-// Auto-reconnect if was connected before
+// Load Google APIs
 window.addEventListener('load', () => {
-  if (localStorage.getItem('zara_cal_connected') === '1') {
-    setTimeout(() => {
-      gapi.load('client:auth2', () => {
-        gapi.client.init({
-          clientId: GOOGLE_CLIENT_ID,
-          scope: CALENDAR_SCOPES,
-          discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest']
-        }).then(() => {
-          if (gapi.auth2.getAuthInstance().isSignedIn.get()) onCalendarSignedIn();
-        });
-      });
-    }, 2000);
-  }
+  const s1 = document.createElement('script');
+  s1.src = 'https://apis.google.com/js/api.js';
+  s1.onload = gapiLoaded;
+  document.head.appendChild(s1);
+  const s2 = document.createElement('script');
+  s2.src = 'https://accounts.google.com/gsi/client';
+  s2.onload = gisLoaded;
+  document.head.appendChild(s2);
 });
 
-// Refresh every 30 mins
 setInterval(() => { if (calendarConnected) fetchTodaysMeetings(); }, 1800000);
 
 window.speechSynthesis.onvoiceschanged = ()=>{};
