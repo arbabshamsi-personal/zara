@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZARA — Always With You, Arbab</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="theme-color" content="#faf7f2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -683,6 +684,59 @@ When Arbab says things like:
 - "Remind me about Y tomorrow" → Create reminder event
 Always be proactive — if he mentions a commitment, immediately offer to add it.`;
 
+// ═══ SUPABASE ═══
+const SUPABASE_URL = 'https://yidcjxwmfxveleaajbaa.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpZGNqeHdtZnh2ZWxlYWFqYmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NjkyMDcsImV4cCI6MjA5MTE0NTIwN30.RCfFkLi63dLmCS5U31QyQNy_zlAAvPVYqO6LxrmD154';
+let supabase = null;
+
+function initSupabase() {
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('Supabase connected ✅');
+  } catch(e) {
+    console.log('Supabase init error:', e);
+  }
+}
+
+async function saveMessageToSupabase(role, content, mode='personal') {
+  if (!supabase) return;
+  try {
+    await supabase.from('conversations').insert({
+      role: role,
+      content: content,
+      mode: mode,
+      created_at: new Date().toISOString()
+    });
+  } catch(e) {
+    console.log('Save error:', e);
+  }
+}
+
+async function loadMessagesFromSupabase() {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*')
+      .order('created_at', { ascending: true })
+      .limit(50);
+    if (error) throw error;
+    return data || [];
+  } catch(e) {
+    console.log('Load error:', e);
+    return [];
+  }
+}
+
+async function clearSupabaseHistory() {
+  if (!supabase) return;
+  try {
+    await supabase.from('conversations').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  } catch(e) {
+    console.log('Clear error:', e);
+  }
+}
+
 // ═══ STATE ═══
 let apiKey = '';
 let userEmail = '';
@@ -714,6 +768,7 @@ window.onload = function() {
   updateEmotion();
   setInterval(updateEmotion, 60000);
   setupSpeechRecognition();
+  initSupabase();
   // Always show login first
   document.getElementById('login-overlay').classList.remove('hidden');
   document.getElementById('setup-overlay').classList.add('hidden');
@@ -827,6 +882,9 @@ async function sendMessage(userText = null) {
     appendMessage('zara', reply, currentMode);
     conversationHistory.push({ role: 'assistant', content: reply });
     saveHistory();
+    // Save both messages to Supabase
+    await saveMessageToSupabase('user', text, currentMode);
+    await saveMessageToSupabase('assistant', reply, currentMode);
     speak(reply);
   } catch (err) {
     removeTyping(tid);
@@ -1176,7 +1234,23 @@ function saveHistory() {
   localStorage.setItem('zara_last_interaction', new Date().toISOString());
 }
 
-function loadHistory() {
+async function loadHistory() {
+  // Try Supabase first
+  if (supabase) {
+    try {
+      const messages = await loadMessagesFromSupabase();
+      if (messages.length > 0) {
+        conversationHistory = messages.map(m => ({ role: m.role, content: m.content }));
+        hideWelcome();
+        // Show last 8 messages
+        messages.slice(-8).forEach(m => {
+          appendMessage(m.role === 'user' ? 'user' : 'zara', m.content, m.mode || 'personal');
+        });
+        return;
+      }
+    } catch(e) {}
+  }
+  // Fallback to localStorage
   try {
     const saved = localStorage.getItem('zara_history');
     if (saved) {
@@ -1190,9 +1264,10 @@ function loadHistory() {
   } catch(e) {}
 }
 
-function clearConversation() {
+async function clearConversation() {
   conversationHistory = [];
   localStorage.removeItem('zara_history');
+  await clearSupabaseHistory();
   document.getElementById('conversation').innerHTML = '';
   document.getElementById('history-list').innerHTML = '';
   const w = document.createElement('div');
