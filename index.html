@@ -576,7 +576,7 @@
 const ZARA_USERNAME = 'arbabshamsi';
 const ZARA_PASSWORD = 'Zaraisarbab';
 
-function doLogin() {
+async function doLogin() {
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value.trim();
   const err = document.getElementById('login-error');
@@ -587,8 +587,11 @@ function doLogin() {
     userEmail = localStorage.getItem('zara_email') || '';
     if (apiKey) {
       document.getElementById('setup-overlay').classList.add('hidden');
-      if (userEmail) document.getElementById('email-notif').value = userEmail;
-      loadHistory();
+      if (userEmail) {
+        const emailEl = document.getElementById('email-notif');
+        if (emailEl) emailEl.value = userEmail;
+      }
+      await loadHistory();
       updateLastSeenDisplay();
       requestNotificationPermission();
       setTimeout(() => openingGreeting(), 800);
@@ -775,11 +778,11 @@ window.onload = function() {
   document.getElementById('login-user').focus();
 };
 
-function saveSetup() {
+async function saveSetup() {
   const key = document.getElementById('api-key-input').value.trim();
   const email = document.getElementById('email-setup-input').value.trim();
   if (!key.startsWith('sk-ant-')) {
-    document.getElementById('api-key-input').style.borderColor = '#fb7185';
+    document.getElementById('api-key-input').style.borderColor = '#c0415a';
     document.getElementById('api-key-input').placeholder = 'Must start with sk-ant-...';
     return;
   }
@@ -789,9 +792,12 @@ function saveSetup() {
   if (email) localStorage.setItem('zara_email', email);
   localStorage.setItem('zara_last_visit', new Date().toISOString());
   document.getElementById('setup-overlay').classList.add('hidden');
-  if (email) document.getElementById('email-notif').value = email;
+  if (email) {
+    const emailEl = document.getElementById('email-notif');
+    if (emailEl) emailEl.value = email;
+  }
   requestNotificationPermission();
-  loadHistory();
+  await loadHistory();
   setTimeout(() => openingGreeting(), 800);
 }
 
