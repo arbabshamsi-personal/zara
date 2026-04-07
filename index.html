@@ -834,9 +834,59 @@ async function sendMessage(userText = null) {
   }
 }
 
+// ═══ ISLAMIC DATE CALCULATOR ═══
+function getIslamicDate(date) {
+  // Accurate Islamic calendar calculation
+  const JD = Math.floor((date.getTime() / 86400000) + 2440587.5);
+  const l = JD - 1948440 + 10632;
+  const n = Math.floor((l - 1) / 10631);
+  const ll = l - 10631 * n + 354;
+  const j = Math.floor((10985 - ll) / 5316) * Math.floor((50 * ll) / 17719) +
+             Math.floor(ll / 5670) * Math.floor((43 * ll) / 15238);
+  const ll2 = ll - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) -
+              Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+  const m = Math.floor((24 * ll2) / 709);
+  const d = ll2 - Math.floor((709 * m) / 24);
+  const y = 30 * n + j - 30;
+
+  const islamicMonths = [
+    'Muharram', 'Safar', 'Rabi al-Awwal', 'Rabi al-Thani',
+    'Jumada al-Awwal', 'Jumada al-Thani', 'Rajab', 'Sha'ban',
+    'Ramadan', 'Shawwal', 'Dhul Qi'dah', 'Dhul Hijjah'
+  ];
+
+  return { day: d, month: islamicMonths[m - 1] || 'Unknown', year: y };
+}
+
 async function callClaude() {
   setStatus('thinking');
   const msgs = conversationHistory.slice(-20);
+
+  // Real-time date/time injection
+  const now = new Date();
+  const timeOptions = { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true };
+  const dateOptions = { timeZone: 'Asia/Kolkata', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  const currentTime = now.toLocaleTimeString('en-US', timeOptions);
+  const currentDate = now.toLocaleDateString('en-US', dateOptions);
+  const currentDay = now.toLocaleDateString('en-US', { timeZone: 'Asia/Kolkata', weekday: 'long' });
+
+  // Islamic date calculation (approximate)
+  const islamicDate = getIslamicDate(now);
+
+  const timeContext = `
+
+━━━ REAL-TIME CONTEXT (Always use this) ━━━
+Current Date: ${currentDate}
+Current Time (India/Moradabad): ${currentTime}
+Current Day: ${currentDay}
+Islamic Date (approximate): ${islamicDate.day} ${islamicDate.month} ${islamicDate.year} AH
+Makkah Time: ${new Date(now.getTime() - (60*60*1000)).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true})} (IST - 1.5 hrs approx)
+Today's meetings: ${todaysMeetings.length > 0 ? todaysMeetings.map(e => { const s = e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit', hour12:true}) : 'All day'; return (e.summary || 'Meeting') + ' at ' + s; }).join(', ') : 'No meetings today'}
+
+IMPORTANT: You ALWAYS know the exact date and time. Never say you don't have access to real-time clock. Use the above information confidently in every response.`;
+
+  const fullSystem = ZARA_SOUL + timeContext;
+
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -848,7 +898,7 @@ async function callClaude() {
     body: JSON.stringify({
       model: 'claude-opus-4-5',
       max_tokens: 1024,
-      system: ZARA_SOUL,
+      system: fullSystem,
       messages: msgs
     })
   });
