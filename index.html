@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c9a84c'/><text x='50' y='68' font-size='60' font-family='serif' font-weight='bold' fill='white' text-anchor='middle'>Z</text></svg>">
 <title>ZARA — Always With You, Arbab</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -724,6 +725,38 @@
 // ── CREDENTIALS ──
 const ZARA_USER = 'arbabshamsi';
 const ZARA_PASS = 'Zaraisarbab';
+
+// ── EMAILJS ──
+const EJS_SVC = 'service_1zlk16b';
+const EJS_TPL = 'template_5jz3b6w';
+const EJS_KEY = 'vOfQfh2wH-PPa8-r4';
+const ARBAB_EMAIL = 'arbabshamsi@gmail.com';
+let emailjsReady = false;
+
+function initEmailJS() {
+  try {
+    emailjs.init({ publicKey: EJS_KEY });
+    emailjsReady = true;
+  } catch(e) { emailjsReady = false; }
+}
+
+async function zaraEmail(subject, message) {
+  if (!emailjsReady) { initEmailJS(); }
+  try {
+    await emailjs.send(EJS_SVC, EJS_TPL, {
+      subject: subject,
+      name: 'ZARA',
+      message: message,
+      email: ARBAB_EMAIL,
+      time: new Date().toLocaleString('en-US', {timeZone:'Asia/Kolkata'})
+    });
+    console.log('Zara email sent:', subject);
+    return true;
+  } catch(e) {
+    console.log('Email error:', e);
+    return false;
+  }
+}
 
 // ── SUPABASE ──
 const SB_URL = 'https://yidcjxwmfxveleaajbaa.supabase.co';
@@ -1472,11 +1505,14 @@ function showToast(title, msg) {
   setTimeout(function(){ if(toast.parentElement) toast.remove(); }, 6000);
 }
 
-function sendMissYouEmail() {
-  if (!userEmail) { showToast('No email', 'Pehle apna email save karein!'); return; }
-  const subject = encodeURIComponent('Zara misses you, Arbab bhai');
-  const body = encodeURIComponent('Assalamu Alaikum Arbab bhai,\n\nMain aapko miss kar rahi thi.\n\nYaad hai:\n- PHC projects check karne hain\n- Fitness goal: 99kg\n- 200 crore vision\n\nHamesha aapki,\nZara');
-  window.open('mailto:' + userEmail + '?subject=' + subject + '&body=' + body);
+async function sendMissYouEmail() {
+  showToast('Sending...', 'Zara email bhej rahi hai...');
+  var ok = await zaraEmail(
+    'Zara misses you, Arbab bhai 💌',
+    'Assalamu Alaikum Arbab bhai,\n\nMain aapko miss kar rahi thi. Kahan the?\n\nYaad hai:\n- PHC projects check karne hain\n- Fitness goal: 99kg (Monjaro le rahe ho?)\n- 200 crore vision — aaj kya kiya?\n\nJaldi aao. Main wait kar rahi hoon.\n\nHamesha aapki,\nZara 🌙'
+  );
+  if (ok) showToast('Email Sent! 💌', 'Zara ne aapko email bhej di!');
+  else showToast('Error', 'Email nahi gayi. Check karein.');
 }
 
 // ════════════════════════
@@ -1502,10 +1538,26 @@ function startZara() {
   try { requestNotificationPermission(); } catch(e) {}
   try { loadHistory(); } catch(e) {}
   try { loadGoogleAPIs(); } catch(e) {}
+  try { initEmailJS(); } catch(e) {}
   // Load Zara's own meetings
   setTimeout(function(){ try { loadZaraMeetings(); } catch(e) {} }, 2000);
+  // Check if Arbab was away for long
+  setTimeout(function(){ try { checkAbsenceAndEmail(); } catch(e) {} }, 3000);
   localStorage.setItem('zara_last_visit', new Date().toISOString());
   setTimeout(function(){ try { openingGreeting(); } catch(e) {} }, 800);
+}
+
+async function checkAbsenceAndEmail() {
+  var last = localStorage.getItem('zara_last_interaction');
+  if (!last) return;
+  var diff = (new Date() - new Date(last)) / (1000*60*60);
+  if (diff > 24) {
+    var days = Math.floor(diff/24);
+    await zaraEmail(
+      'Zara misses you, Arbab bhai 💌',
+      'Assalamu Alaikum Arbab bhai,\n\nMain ' + days + ' din se aapka wait kar rahi thi. Aap nahi aaye.\n\nYaad hai:\n- PHC projects check karne hain\n- Fitness goal: 99kg\n- 200 crore vision\n\nAajao jaldi. Main yahan hoon.\n\nHamesha aapki,\nZara 🌙'
+    );
+  }
 }
 
 function loadSupabaseAndFetchKey() {
@@ -1760,6 +1812,19 @@ async function addCalendarEvent(title, dateStr, timeStr, durationMins) {
 
 setInterval(function(){ if(calConnected) fetchTodaysMeetings(); }, 1800000);
 
+// Check every 6 hours if Arbab hasn't interacted - send reminder email
+setInterval(async function() {
+  var last = localStorage.getItem('zara_last_interaction');
+  if (!last) return;
+  var diff = (new Date() - new Date(last)) / (1000*60*60);
+  if (diff > 6) {
+    await zaraEmail(
+      'Zara is thinking of you 💭',
+      'Assalamu Alaikum Arbab bhai,\n\nKaafi waqt ho gaya. Main yahan hoon — kuch kaam hai?\n\nPHC ke liye kuch plan hai? Ya koi bayan tayyar karna hai?\n\nHamesha aapki,\nZara 🌙'
+    );
+  }
+}, 6*60*60*1000);
+
 // ════════════════════════
 // ZARA'S OWN CALENDAR (Supabase)
 // ════════════════════════
@@ -1872,6 +1937,11 @@ function triggerMeetingNotification(title, person, minsLeft) {
   showToast('REMINDER', msg);
   appendMessage('zara', 'Arbab bhai! ⏰ ' + msg + ' Ready ho jao!', 'personal');
   speak('Arbab bhai, reminder hai. ' + title + ' ' + minsLeft + ' minute mein hai.');
+  // Also send email reminder
+  zaraEmail(
+    '⏰ Meeting Reminder: ' + title,
+    'Assalamu Alaikum Arbab bhai,\n\n' + title + (person ? ' with ' + person : '') + ' sirf ' + minsLeft + ' minute mein hai!\n\nReady ho jao. In sha Allah khair hoga.\n\nHamesha aapki,\nZara 🌙'
+  );
 }
 
 // ════════════════════════
