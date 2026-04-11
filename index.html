@@ -727,8 +727,8 @@ const ZARA_USER = 'arbabshamsi';
 const ZARA_PASS = 'Zaraisarbab';
 
 // ── VOICE AI ──
-const OPENAI_KEY = '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';
-const ELEVENLABS_KEY = 'sk_97517d27fe1a4490e0decb6789e300d68a3accb0b5fa0851';
+let OPENAI_KEY = '';
+let ELEVENLABS_KEY = '';
 const ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
 let mediaRecorder = null;
 let audioChunks = [];
@@ -783,6 +783,9 @@ let gisReady = false;
 // ── STATE ──
 let apiKey = localStorage.getItem('zara_api_key') || '';
 let userEmail = localStorage.getItem('zara_email') || 'arbabshamsi@gmail.com';
+// Voice keys loaded from Supabase - restored from localStorage for speed
+if (localStorage.getItem('zara_openai_key')) { }  // will be set after var declaration
+if (localStorage.getItem('zara_elevenlabs_key')) { }  // will be set after var declaration
 let conversationHistory = [];
 let isListening = false;
 let recognition = null;
@@ -1454,46 +1457,82 @@ let currentAudio = null;
 async function speakElevenLabs(text) {
   try {
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    if (synth) synth.cancel();
     setStatus('speaking');
     animateMouth(true);
 
     var clean = text
-      .replace(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g, '')
-      .replace(/[*_#]/g, '')
-      .replace(/\n+/g, '. ')
+      .replace(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/g, '')
+      .replace(/[*_#[\]]/g, '')
+      .replace(/
++/g, '. ')
       .replace(/\s+/g, ' ')
       .trim()
-      .substring(0, 500);
+      .substring(0, 400);
 
     if (!clean) { setStatus('ready'); animateMouth(false); return; }
 
-    var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + ELEVENLABS_VOICE_ID, {
+    document.getElementById('zara-state').textContent = 'ElevenLabs se bol rahi hoon...';
+
+    var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + ELEVENLABS_VOICE_ID + '/stream', {
       method: 'POST',
       headers: {
         'xi-api-key': ELEVENLABS_KEY,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'audio/mpeg'
       },
       body: JSON.stringify({
         text: clean,
         model_id: 'eleven_multilingual_v2',
-        voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true }
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          style: 0.0,
+          use_speaker_boost: true
+        }
       })
     });
 
     if (!res.ok) {
-      // Fallback to browser TTS
+      var errText = await res.text();
+      console.log('ElevenLabs error:', res.status, errText);
+      showToast('Voice', 'ElevenLabs: ' + res.status + ' — browser voice use ho rahi hai');
+      animateMouth(false);
       speak(text);
       return;
     }
 
     var audioBlob = await res.blob();
+    if (audioBlob.size < 100) {
+      animateMouth(false);
+      speak(text);
+      return;
+    }
+
     var audioUrl = URL.createObjectURL(audioBlob);
     currentAudio = new Audio(audioUrl);
-    currentAudio.onended = function() { setStatus('ready'); animateMouth(false); URL.revokeObjectURL(audioUrl); };
-    currentAudio.onerror = function() { setStatus('ready'); animateMouth(false); };
-    currentAudio.play();
+    currentAudio.onplay = function() {
+      setStatus('speaking');
+      animateMouth(true);
+      document.getElementById('zara-state').textContent = 'Bol rahi hoon...';
+    };
+    currentAudio.onended = function() {
+      setStatus('ready');
+      animateMouth(false);
+      URL.revokeObjectURL(audioUrl);
+    };
+    currentAudio.onerror = function(e) {
+      console.log('Audio error:', e);
+      setStatus('ready');
+      animateMouth(false);
+      speak(text);
+    };
+    await currentAudio.play();
+
   } catch(e) {
-    // Fallback to browser TTS if ElevenLabs fails
+    console.log('ElevenLabs exception:', e);
+    showToast('Voice Fallback', 'ElevenLabs nahi mili — browser voice use ho rahi hai');
+    animateMouth(false);
     speak(text);
   }
 }
@@ -1634,6 +1673,9 @@ function startZara() {
   document.getElementById('loading-overlay').classList.add('hidden');
   document.getElementById('login-overlay').classList.add('hidden');
   document.getElementById('setup-overlay').classList.add('hidden');
+  // Restore voice keys from localStorage cache
+  if (!OPENAI_KEY) OPENAI_KEY = localStorage.getItem('zara_openai_key') || '';
+  if (!ELEVENLABS_KEY) ELEVENLABS_KEY = localStorage.getItem('zara_elevenlabs_key') || '';
   // Start everything
   try { const en = document.getElementById('email-notif'); if (en) en.value = userEmail; } catch(e) {}
   try { updateLastSeenDisplay(); } catch(e) {}
@@ -1669,13 +1711,21 @@ function loadSupabaseAndFetchKey() {
   s.onload = async function() {
     try {
       sb = window.supabase.createClient(SB_URL, SB_KEY);
-      var res = await sb.from('settings').select('api_key,email').eq('id','arbab').single();
+      var res = await sb.from('settings').select('api_key,email,openai_key,elevenlabs_key').eq('id','arbab').single();
       if (res.data && res.data.api_key) {
         apiKey = res.data.api_key;
         localStorage.setItem('zara_api_key', apiKey);
         if (res.data.email) {
           userEmail = res.data.email;
           localStorage.setItem('zara_email', userEmail);
+        }
+        if (res.data.openai_key) {
+          OPENAI_KEY = res.data.openai_key;
+          localStorage.setItem('zara_openai_key', OPENAI_KEY);
+        }
+        if (res.data.elevenlabs_key) {
+          ELEVENLABS_KEY = res.data.elevenlabs_key;
+          localStorage.setItem('zara_elevenlabs_key', ELEVENLABS_KEY);
         }
         startZara();
         return;
