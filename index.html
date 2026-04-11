@@ -685,7 +685,7 @@ function loadSupabase() {
   s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
   s.onload = function() {
     try {
-      sb = window.supabase.createClient(SB_URL, SB_KEY);
+      sb = window.supabase.createClient(SB_URL, SB_KEY); setTimeout(loadVoiceKeys, 1000);
     } catch(e) { sb = null; }
   };
   s.onerror = function() { sb = null; };
@@ -1261,7 +1261,7 @@ async function addCalendarEvent(title, dateStr, timeStr, durationMins) {
 
 // Calendar button removed - use sidebar form instead
 
-// ── ELEVENLABS + WHISPER ──
+// ElevenLabs + Whisper
 var OPENAI_KEY = localStorage.getItem('zara_openai') || '';
 var ELEVENLABS_KEY = localStorage.getItem('zara_eleven') || '';
 var ELEVEN_VOICE = '21m00Tcm4TlvDq8ikWAM';
@@ -1270,7 +1270,6 @@ var audioChunks = [];
 var isRec = false;
 var curAudio = null;
 
-// Load voice keys from Supabase silently after login
 function loadVoiceKeys() {
   if (OPENAI_KEY && ELEVENLABS_KEY) return;
   if (!sb) { setTimeout(loadVoiceKeys, 2000); return; }
@@ -1288,19 +1287,18 @@ async function speakElevenLabs(text) {
   try {
     if (curAudio) { curAudio.pause(); curAudio = null; }
     setStatus('speaking');
-    var clean = text.replace(/
-+/g,'. ').replace(/[*_#]/g,'').trim().substring(0,500);
-    var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+ELEVEN_VOICE, {
-      method:'POST',
-      headers:{'xi-api-key':ELEVENLABS_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify({text:clean,model_id:'eleven_multilingual_v2',voice_settings:{stability:0.5,similarity_boost:0.8}})
+    var clean = text.split('\n').join('. ').replace(/[*_#]/g, '').trim().substring(0, 500);
+    var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + ELEVEN_VOICE, {
+      method: 'POST',
+      headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: clean, model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.5, similarity_boost: 0.8 } })
     });
     if (!res.ok) { speak(text); return; }
     var blob = await res.blob();
     var url = URL.createObjectURL(blob);
     curAudio = new Audio(url);
-    curAudio.onended = function(){ setStatus('ready'); URL.revokeObjectURL(url); };
-    curAudio.onerror = function(){ setStatus('ready'); speak(text); };
+    curAudio.onended = function() { setStatus('ready'); URL.revokeObjectURL(url); };
+    curAudio.onerror = function() { setStatus('ready'); speak(text); };
     curAudio.play();
   } catch(e) { speak(text); }
 }
@@ -1308,44 +1306,47 @@ async function speakElevenLabs(text) {
 function toggleWhisper() {
   if (!OPENAI_KEY) { toggleVoice(); return; }
   if (isRec) {
-    if (mediaRec && mediaRec.state!=='inactive') mediaRec.stop();
+    if (mediaRec && mediaRec.state !== 'inactive') mediaRec.stop();
     isRec = false;
     document.getElementById('mic-btn').classList.remove('active');
     document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
     setStatus('ready');
   } else {
-    navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream) {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
       audioChunks = [];
       mediaRec = new MediaRecorder(stream);
-      mediaRec.ondataavailable = function(e){ if(e.data.size>0) audioChunks.push(e.data); };
-      mediaRec.onstop = function(){ stream.getTracks().forEach(function(t){t.stop();}); runWhisper(); };
+      mediaRec.ondataavailable = function(e) { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRec.onstop = function() { stream.getTracks().forEach(function(t) { t.stop(); }); runWhisper(); };
       mediaRec.start();
       isRec = true;
       document.getElementById('mic-btn').classList.add('active');
       document.getElementById('mic-btn').textContent = String.fromCodePoint(9209);
       setStatus('listening');
       var vt = document.getElementById('voice-transcript');
-      vt.textContent = 'Sun rahi hoon...'; vt.classList.add('visible');
-    }).catch(function(){ toggleVoice(); });
+      vt.textContent = 'Sun rahi hoon...';
+      vt.classList.add('visible');
+    }).catch(function() { toggleVoice(); });
   }
 }
 
 async function runWhisper() {
   try {
-    var blob = new Blob(audioChunks,{type:'audio/webm'});
+    var blob = new Blob(audioChunks, { type: 'audio/webm' });
     var fd = new FormData();
-    fd.append('file',blob,'rec.webm');
-    fd.append('model','whisper-1');
-    var res = await fetch('https://api.openai.com/v1/audio/transcriptions',{
-      method:'POST', headers:{'Authorization':'Bearer '+OPENAI_KEY}, body:fd
+    fd.append('file', blob, 'rec.webm');
+    fd.append('model', 'whisper-1');
+    var res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + OPENAI_KEY },
+      body: fd
     });
     var data = await res.json();
-    var text = (data.text||'').trim();
+    var text = (data.text || '').trim();
     var vt = document.getElementById('voice-transcript');
     vt.textContent = text;
-    setTimeout(function(){ vt.classList.remove('visible'); }, 3000);
-    if (text) { document.getElementById('text-input').value=text; setStatus('ready'); sendMessage(); }
-    else setStatus('ready');
+    setTimeout(function() { vt.classList.remove('visible'); }, 3000);
+    if (text) { document.getElementById('text-input').value = text; setStatus('ready'); sendMessage(); }
+    else { setStatus('ready'); }
   } catch(e) { setStatus('ready'); }
 }
 
