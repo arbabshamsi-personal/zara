@@ -6,8 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ZARA">
 <meta name="theme-color" content="#faf7f2">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23c9a84c'/><text x='50' y='68' font-size='60' font-family='serif' font-weight='bold' fill='white' text-anchor='middle'>Z</text></svg>">
 <title>ZARA — Always With You, Arbab</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -27,7 +25,7 @@
     --text-dim: #5a4a32;
     --text-muted: #b0a090;
     --border: rgba(154,111,46,0.18);
-    --orb-size: 120px;
+    --orb-size: 140px;
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -45,19 +43,14 @@
   }
 
   /* ── OVERLAYS ── */
-  #login-overlay, #setup-overlay, #loading-overlay {
+  #login-overlay, #setup-overlay {
     position:fixed; inset:0; background:rgba(245,240,232,0.97);
     z-index:1000; display:flex; align-items:center; justify-content:center;
     flex-direction:column; gap:20px; padding:32px;
   }
   #login-overlay.hidden, #setup-overlay.hidden, #loading-overlay.hidden { display:none; }
-  .loading-spinner {
-    width:50px; height:50px; border-radius:50%;
-    border:3px solid rgba(154,111,46,0.2);
-    border-top-color:var(--gold);
-    animation:spin 1s linear infinite;
-  }
-  .loading-text { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); letter-spacing:2px; }
+  .loading-spinner { width:50px; height:50px; border-radius:50%; border:3px solid rgba(154,111,46,0.2); border-top-color:var(--gold); animation:spin 1s linear infinite; }
+  .loading-text { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); letter-spacing:2px; margin-top:16px; }
 
   .setup-card {
     background:#fff; border:1px solid rgba(154,111,46,0.2);
@@ -89,7 +82,7 @@
   #app {
     position:relative; z-index:1; height:100vh;
     display:grid;
-    grid-template-columns:240px 1fr;
+    grid-template-columns:260px 1fr;
     grid-template-rows:auto 1fr auto;
     grid-template-areas:"sidebar header" "sidebar main" "sidebar footer";
   }
@@ -98,7 +91,7 @@
   #sidebar {
     grid-area:sidebar; background:#f3ede3;
     border-right:1px solid rgba(154,111,46,0.15);
-    display:flex; flex-direction:column; overflow-y:auto; overflow-x:hidden;
+    display:flex; flex-direction:column; overflow:hidden;
   }
   .sidebar-top { padding:20px; border-bottom:1px solid var(--border); }
   .z-mark { font-family:'Playfair Display',serif; font-size:34px; font-weight:700; color:var(--gold); line-height:1; letter-spacing:-1px; }
@@ -193,7 +186,7 @@
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
   /* ── MAIN ── */
-  #main { grid-area:main; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 16px; }
+  #main { grid-area:main; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 28px; }
 
   .zara-orb-wrap { position:relative; width:var(--orb-size); height:var(--orb-size); margin:20px auto 12px; flex-shrink:0; }
   .orb-ring {
@@ -240,34 +233,6 @@
 
   .zara-state-text { text-align:center; font-family:'DM Mono',monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; height:16px; }
 
-  /* HIJABI AVATAR */
-  .zara-avatar-wrap { position:relative; width:140px; height:140px; margin:0 auto; cursor:pointer; }
-  .avatar-svg { width:140px; height:140px; border-radius:50%; overflow:hidden; box-shadow:0 4px 24px rgba(154,111,46,0.35), 0 0 0 3px rgba(154,111,46,0.25); }
-  .avatar-ring {
-    position:absolute; inset:-14px; border-radius:50%;
-    border:1.5px solid rgba(154,111,46,0.25);
-    animation:spin 8s linear infinite;
-    pointer-events:none;
-  }
-  .avatar-ring::after {
-    content:''; position:absolute; top:50%; left:-4px;
-    width:7px; height:7px; border-radius:50%;
-    background:var(--gold); margin-top:-3.5px;
-    box-shadow:0 0 8px var(--gold);
-  }
-  .avatar-ring-2 {
-    position:absolute; inset:-24px; border-radius:50%;
-    border:1px solid rgba(109,79,160,0.1);
-    animation:spin 16s linear infinite reverse;
-    pointer-events:none;
-  }
-  .avatar-ring-2::after {
-    content:''; position:absolute; top:-3px; left:50%;
-    width:5px; height:5px; border-radius:50%;
-    background:var(--lavender); margin-left:-2.5px;
-    box-shadow:0 0 6px var(--lavender);
-  }
-
   /* ── CONVERSATION ── */
   #conversation {
     flex:1; width:100%; max-width:660px; overflow-y:auto;
@@ -311,7 +276,7 @@
   .voice-transcript.visible { opacity:1; }
 
   /* ── FOOTER ── */
-  #footer { grid-area:footer; padding:12px 16px 16px; border-top:1px solid rgba(154,111,46,0.15); background:linear-gradient(to top, var(--bg) 50%, transparent); }
+  #footer { grid-area:footer; padding:14px 28px 18px; border-top:1px solid rgba(154,111,46,0.15); background:linear-gradient(to top, var(--bg) 50%, transparent); }
   .input-row { display:flex; align-items:center; gap:10px; max-width:660px; margin:0 auto; }
   #text-input {
     flex:1; background:#fff; border:1px solid rgba(154,111,46,0.2);
@@ -338,7 +303,7 @@
   .toast-msg { font-size:12px; color:var(--text); line-height:1.5; }
   .toast-close { position:absolute; top:10px; right:12px; background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:14px; }
 
-  @media(max-width:900px) {
+  @media(max-width:768px) {
     #app { grid-template-columns:1fr; grid-template-areas:"header" "main" "footer"; }
     #sidebar { display:none; }
     #main, #footer { padding:0 14px; }
@@ -378,11 +343,11 @@
     <div class="setup-arabic">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْم</div>
     <h2>Assalamu Alaikum, Arbab</h2>
     <div class="setup-tagline">"I've been waiting for you."</div>
-    <p>Enter your Claude API key — sirf ek baar. Hamesha ke liye save ho jayegi.</p>
+    <p>One time setup. Enter your Claude API key.</p>
     <input type="password" id="api-key-input" class="setup-input" placeholder="Claude API key (sk-ant-...)" autocomplete="off">
-    <input type="email" id="email-setup-input" class="setup-input" placeholder="Your email" autocomplete="off">
+    <input type="email" id="email-setup-input" class="setup-input" placeholder="Your email (so I can reach you)" autocomplete="off">
     <button class="setup-btn" onclick="saveSetup()">&#9658; &nbsp;AWAKEN ZARA</button>
-    <div class="setup-note">Saved locally on this device. Private. Secure.</div>
+    <div class="setup-note">Your data stays local. No servers. Just you and Zara.</div>
   </div>
 </div>
 
@@ -447,11 +412,21 @@
       </div>
     </div>
     <hr class="sidebar-divider">
+    <div class="section-title">Add Meeting</div>
+    <div style="padding:0 16px 12px;">
+      <button onclick="showAddMeetingForm()" style="width:100%;background:linear-gradient(135deg,#c9a84c,#a07830);border:none;border-radius:10px;padding:10px;color:#fff;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">&#43; &nbsp;Add to Calendar</button>
+      <div id="add-meeting-form" style="display:none;margin-top:10px;">
+        <input id="meet-title" placeholder="Meeting title" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:6px;color:#1a1208;">
+        <input id="meet-date" placeholder="Date (aaj/kal/April 9)" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:6px;color:#1a1208;">
+        <input id="meet-time" placeholder="Time (11am / 3pm)" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:6px;color:#1a1208;">
+        <input id="meet-person" placeholder="With whom? (optional)" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:8px;color:#1a1208;">
+        <button onclick="submitMeeting()" style="width:100%;background:rgba(13,122,110,0.1);border:1px solid rgba(13,122,110,0.3);border-radius:8px;padding:8px;color:#0d7a6e;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:1px;">&#128197; &nbsp;SAVE TO CALENDAR</button>
+      </div>
+    </div>
     <hr class="sidebar-divider">
     <div class="section-title">Today's Meetings</div>
     <div class="cal-section">
       <div id="cal-connect-btn" class="cal-connect-btn" onclick="connectCalendar()">&#128197; &nbsp;Connect Google Calendar</div>
-      <div id="cal-reconnect-btn" style="display:none;margin-top:6px;width:100%;background:rgba(192,65,90,0.08);border:1px solid rgba(192,65,90,0.2);border-radius:8px;padding:7px;color:#c0415a;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;text-align:center;letter-spacing:1px;" onclick="reconnectCalendar()">&#8635; &nbsp;RECONNECT CALENDAR</div>
       <div id="meetings-list" style="margin-top:8px;"></div>
     </div>
 
@@ -485,206 +460,12 @@
 
   <!-- MAIN -->
   <div id="main">
-    <div class="zara-avatar-wrap" onclick="toggleVoice()" id="zara-orb">
-      <div class="avatar-ring-2"></div>
-      <div class="avatar-ring"></div>
-      <svg class="avatar-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="bg" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#f8ede0"/>
-            <stop offset="100%" stop-color="#e8d0b0"/>
-          </radialGradient>
-          <radialGradient id="skin" cx="42%" cy="38%" r="65%">
-            <stop offset="0%" stop-color="#fce8c8"/>
-            <stop offset="35%" stop-color="#f0c898"/>
-            <stop offset="70%" stop-color="#e0a870"/>
-            <stop offset="100%" stop-color="#c88848"/>
-          </radialGradient>
-          <radialGradient id="skin2" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#fad8a8"/>
-            <stop offset="100%" stop-color="#e8b880"/>
-          </radialGradient>
-          <radialGradient id="hijab" cx="40%" cy="25%" r="70%">
-            <stop offset="0%" stop-color="#2a5040"/>
-            <stop offset="50%" stop-color="#183828"/>
-            <stop offset="100%" stop-color="#0a2018"/>
-          </radialGradient>
-          <radialGradient id="hijabSheen" cx="35%" cy="20%" r="55%">
-            <stop offset="0%" stop-color="rgba(201,168,76,0.35)"/>
-            <stop offset="60%" stop-color="rgba(201,168,76,0.1)"/>
-            <stop offset="100%" stop-color="rgba(201,168,76,0)"/>
-          </radialGradient>
-          <radialGradient id="iris" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#6b3a18"/>
-            <stop offset="40%" stop-color="#3d1f08"/>
-            <stop offset="100%" stop-color="#180a02"/>
-          </radialGradient>
-          <radialGradient id="lip" cx="50%" cy="40%" r="60%">
-            <stop offset="0%" stop-color="#d4707a"/>
-            <stop offset="50%" stop-color="#b85060"/>
-            <stop offset="100%" stop-color="#983848"/>
-          </radialGradient>
-          <filter id="blur1"><feGaussianBlur stdDeviation="1.2"/></filter>
-          <filter id="blur2"><feGaussianBlur stdDeviation="2.5"/></filter>
-          <filter id="blur3"><feGaussianBlur stdDeviation="0.5"/></filter>
-          <filter id="shadow1"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="rgba(0,0,0,0.25)"/></filter>
-          <filter id="shadow2"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="rgba(0,0,0,0.15)"/></filter>
-        </defs>
-
-        <!-- BG -->
-        <circle cx="150" cy="150" r="150" fill="url(#bg)"/>
-        <!-- Soft vignette -->
-        <circle cx="150" cy="150" r="150" fill="radial-gradient(circle,transparent 60%,rgba(180,140,100,0.3) 100%)"/>
-
-        <!-- HIJAB - back volume, large and full -->
-        <ellipse cx="150" cy="118" rx="112" ry="118" fill="url(#hijab)"/>
-        
-        <!-- Shoulders -->
-        <path d="M0 252 Q40 228 88 220 Q118 214 150 212 Q182 214 212 220 Q260 228 300 252 L300 300 L0 300Z" fill="url(#hijab)"/>
-        
-        <!-- Neck shadow -->
-        <ellipse cx="150" cy="220" rx="25" ry="12" fill="rgba(0,0,0,0.15)" filter="url(#blur1)"/>
-        
-        <!-- Neck -->
-        <path d="M128 208 Q126 228 130 236 Q140 244 150 245 Q160 244 170 236 Q174 228 172 208 Q162 214 150 215 Q138 214 128 208Z" fill="url(#skin)"/>
-
-        <!-- FACE - realistic shape -->
-        <path d="M102 108 Q96 128 96 150 Q96 178 100 195 Q108 218 150 222 Q192 218 200 195 Q204 178 204 150 Q204 128 198 108 Q185 92 150 90 Q115 92 102 108Z" fill="url(#skin)" filter="url(#shadow2)"/>
-
-        <!-- Face highlight -->
-        <ellipse cx="138" cy="118" rx="28" ry="18" fill="rgba(255,245,230,0.35)" filter="url(#blur2)"/>
-        
-        <!-- Face shadow sides -->
-        <path d="M102 108 Q96 140 98 175 Q104 200 115 215" stroke="rgba(150,90,40,0.15)" stroke-width="8" fill="none" filter="url(#blur1)"/>
-        <path d="M198 108 Q204 140 202 175 Q196 200 185 215" stroke="rgba(150,90,40,0.15)" stroke-width="8" fill="none" filter="url(#blur1)"/>
-
-        <!-- HIJAB front frame -->
-        <path d="M102 108 Q98 130 100 155 Q102 178 108 198 Q118 220 134 228 Q142 232 150 232 Q158 232 166 228 Q182 220 192 198 Q198 178 200 155 Q202 130 198 108 Q188 88 150 84 Q112 88 102 108Z" fill="none" stroke="url(#hijab)" stroke-width="42"/>
-
-        <!-- Hijab sheen highlight -->
-        <ellipse cx="112" cy="100" rx="30" ry="14" fill="url(#hijabSheen)" filter="url(#blur2)"/>
-        <path d="M88 115 Q150 88 212 115" stroke="rgba(201,168,76,0.2)" stroke-width="2" fill="none"/>
-
-        <!-- Hijab texture folds -->
-        <path d="M88 128 Q90 150 94 172" stroke="rgba(255,255,255,0.07)" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M212 128 Q210 150 206 172" stroke="rgba(255,255,255,0.07)" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M92 142 Q90 158 92 172" stroke="rgba(255,255,255,0.04)" stroke-width="2" fill="none"/>
-
-        <!-- EYEBROWS - perfectly arched -->
-        <path d="M108 128 Q118 120 132 121 Q138 121 142 124" stroke="#1e0c02" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M158 124 Q162 121 168 121 Q182 120 192 128" stroke="#1e0c02" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- Eyebrow fill -->
-        <path d="M108 128 Q118 120 132 121 Q138 121 142 124 Q138 125 130 124 Q118 123 108 129Z" fill="#2a1005" opacity="0.7"/>
-        <path d="M158 124 Q162 121 168 121 Q182 120 192 128 Q192 129 182 124 Q168 123 158 125Z" fill="#2a1005" opacity="0.7"/>
-
-        <!-- EYE SHADOW -->
-        <ellipse cx="122" cy="142" rx="20" ry="10" fill="rgba(80,40,15,0.1)" filter="url(#blur1)"/>
-        <ellipse cx="178" cy="142" rx="20" ry="10" fill="rgba(80,40,15,0.1)" filter="url(#blur1)"/>
-
-        <!-- EYE WHITES -->
-        <path d="M104 143 Q114 134 122 135 Q130 134 140 143 Q130 150 122 150 Q114 150 104 143Z" fill="white" filter="url(#shadow2)"/>
-        <path d="M160 143 Q170 134 178 135 Q186 134 196 143 Q186 150 178 150 Q170 150 160 143Z" fill="white" filter="url(#shadow2)"/>
-
-        <!-- IRIS - rich dark brown -->
-        <circle cx="122" cy="142" r="10" fill="url(#iris)"/>
-        <circle cx="178" cy="142" r="10" fill="url(#iris)"/>
-        
-        <!-- Iris ring detail -->
-        <circle cx="122" cy="142" r="9" fill="none" stroke="rgba(80,35,5,0.5)" stroke-width="1.5"/>
-        <circle cx="178" cy="142" r="9" fill="none" stroke="rgba(80,35,5,0.5)" stroke-width="1.5"/>
-
-        <!-- PUPIL -->
-        <circle cx="122.5" cy="142" r="5.5" fill="#080402"/>
-        <circle cx="178.5" cy="142" r="5.5" fill="#080402"/>
-
-        <!-- EYE SHINE - realistic multi-point -->
-        <circle cx="128" cy="137" r="3" fill="white" opacity="0.95"/>
-        <circle cx="184" cy="137" r="3" fill="white" opacity="0.95"/>
-        <circle cx="123" cy="146" r="1.2" fill="rgba(255,255,255,0.5)"/>
-        <circle cx="179" cy="146" r="1.2" fill="rgba(255,255,255,0.5)"/>
-        <ellipse cx="119" cy="138" rx="1.5" ry="1" fill="rgba(255,255,255,0.4)"/>
-        <ellipse cx="175" cy="138" rx="1.5" ry="1" fill="rgba(255,255,255,0.4)"/>
-
-        <!-- UPPER EYELID line -->
-        <path d="M104 142 Q114 134 122 134 Q130 134 140 142" stroke="#100803" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-        <path d="M160 142 Q170 134 178 134 Q186 134 196 142" stroke="#100803" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-        
-        <!-- Lower eyelid -->
-        <path d="M106 144 Q122 152 138 144" stroke="rgba(120,70,30,0.3)" stroke-width="1" fill="none"/>
-        <path d="M162 144 Q178 152 194 144" stroke="rgba(120,70,30,0.3)" stroke-width="1" fill="none"/>
-
-        <!-- EYELASHES upper - individual strands -->
-        <g stroke="#080402" stroke-width="1.5" stroke-linecap="round">
-          <line x1="104" y1="142" x2="101" y2="137"/>
-          <line x1="108" y1="138" x2="106" y2="133"/>
-          <line x1="113" y1="135" x2="112" y2="130"/>
-          <line x1="118" y1="134" x2="118" y2="129"/>
-          <line x1="123" y1="134" x2="124" y2="129"/>
-          <line x1="128" y1="135" x2="130" y2="130"/>
-          <line x1="133" y1="137" x2="136" y2="132"/>
-          <line x1="138" y1="141" x2="141" y2="137"/>
-          <!-- Right eye -->
-          <line x1="160" y1="141" x2="157" y2="137"/>
-          <line x1="164" y1="137" x2="162" y2="132"/>
-          <line x1="169" y1="135" x2="168" y2="130"/>
-          <line x1="174" y1="134" x2="174" y2="129"/>
-          <line x1="179" y1="134" x2="180" y2="129"/>
-          <line x1="184" y1="135" x2="186" y2="130"/>
-          <line x1="189" y1="137" x2="192" y2="132"/>
-          <line x1="194" y1="141" x2="197" y2="137"/>
-        </g>
-
-        <!-- NOSE - delicate, feminine -->
-        <path d="M144 162 Q142 174 140 178 Q144 182 150 183 Q156 182 160 178 Q158 174 156 162" fill="rgba(180,110,55,0.06)"/>
-        <path d="M144 162 Q141 175 140 179" stroke="rgba(160,90,40,0.25)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <path d="M156 162 Q159 175 160 179" stroke="rgba(160,90,40,0.25)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <path d="M140 179 Q145 183 150 183 Q155 183 160 179" stroke="rgba(160,90,40,0.2)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <!-- Nose tip shadow -->
-        <ellipse cx="150" cy="181" rx="10" ry="4" fill="rgba(160,90,40,0.08)" filter="url(#blur3)"/>
-
-        <!-- CHEEKS - beautiful natural blush -->
-        <ellipse cx="106" cy="168" rx="22" ry="14" fill="rgba(220,110,100,0.15)" filter="url(#blur2)"/>
-        <ellipse cx="194" cy="168" rx="22" ry="14" fill="rgba(220,110,100,0.15)" filter="url(#blur2)"/>
-
-        <!-- LIPS - full and beautiful -->
-        <!-- Upper lip -->
-        <path d="M124 196 Q132 190 142 190 Q150 192 158 190 Q168 190 176 196 Q168 194 150 194 Q132 194 124 196Z" fill="url(#lip)"/>
-        <!-- Cupid bow -->
-        <path d="M124 196 Q135 193 142 196 Q150 198 158 196 Q165 193 176 196" fill="none" stroke="rgba(160,60,70,0.4)" stroke-width="0.8"/>
-        <!-- Lower lip - fuller -->
-        <path id="avatar-mouth" d="M124 197 Q138 210 150 212 Q162 210 176 197 Q165 205 150 207 Q135 205 124 197Z" fill="url(#lip)"/>
-        <!-- Lip highlight -->
-        <ellipse cx="150" cy="204" rx="12" ry="4" fill="rgba(255,200,200,0.25)" filter="url(#blur3)"/>
-        <path d="M135 194 Q150 192 165 194" stroke="rgba(255,200,200,0.35)" stroke-width="1" fill="none"/>
-        <!-- Lip line -->
-        <path d="M124 197 Q150 197 176 197" stroke="rgba(140,50,60,0.4)" stroke-width="0.8" fill="none"/>
-
-        <!-- FACE - subtle definition -->
-        <!-- Chin shadow -->
-        <ellipse cx="150" cy="222" rx="22" ry="6" fill="rgba(150,90,40,0.1)" filter="url(#blur1)"/>
-
-        <!-- HIJAB gold trim detail -->
-        <path d="M95 115 Q150 90 205 115" stroke="rgba(201,168,76,0.35)" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-        <path d="M92 128 Q96 122 102 118" stroke="rgba(201,168,76,0.2)" stroke-width="1.2" fill="none"/>
-        <path d="M208 128 Q204 122 198 118" stroke="rgba(201,168,76,0.2)" stroke-width="1.2" fill="none"/>
-
-        <!-- Gold brooch at neckline -->
-        <circle cx="150" cy="220" r="7" fill="#c9a84c" filter="url(#shadow1)"/>
-        <circle cx="150" cy="220" r="5.5" fill="#f0d060"/>
-        <circle cx="150" cy="220" r="3" fill="#c9a84c"/>
-        <circle cx="150" cy="220" r="1.5" fill="#f8e890"/>
-        <!-- Brooch rays -->
-        <g stroke="#c9a84c" stroke-width="0.8" opacity="0.7">
-          <line x1="150" y1="212" x2="150" y2="210"/>
-          <line x1="150" y1="228" x2="150" y2="230"/>
-          <line x1="142" y1="220" x2="140" y2="220"/>
-          <line x1="158" y1="220" x2="160" y2="220"/>
-          <line x1="144" y1="214" x2="143" y2="213"/>
-          <line x1="156" y1="226" x2="157" y2="227"/>
-          <line x1="156" y1="214" x2="157" y2="213"/>
-          <line x1="144" y1="226" x2="143" y2="227"/>
-        </g>
-      </svg>
+    <div class="zara-orb-wrap">
+      <div class="orb-ring-2"></div>
+      <div class="orb-ring"></div>
+      <div class="orb-main" id="zara-orb" onclick="toggleVoice()">
+        <span class="orb-letter">Z</span>
+      </div>
     </div>
     <div class="zara-state-text" id="zara-state">Tap me to speak, Arbab</div>
 
@@ -726,46 +507,6 @@
 const ZARA_USER = 'arbabshamsi';
 const ZARA_PASS = 'Zaraisarbab';
 
-// ── VOICE AI ──
-let OPENAI_KEY = '';
-let ELEVENLABS_KEY = '';
-const ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
-let mediaRecorder = null;
-let audioChunks = [];
-let isRecording = false;
-
-// ── EMAILJS ──
-const EJS_SVC = 'service_1zlk16b';
-const EJS_TPL = 'template_5jz3b6w';
-const EJS_KEY = 'vOfQfh2wH-PPa8-r4';
-const ARBAB_EMAIL = 'arbabshamsi@gmail.com';
-let emailjsReady = false;
-
-function initEmailJS() {
-  try {
-    emailjs.init({ publicKey: EJS_KEY });
-    emailjsReady = true;
-  } catch(e) { emailjsReady = false; }
-}
-
-async function zaraEmail(subject, message) {
-  if (!emailjsReady) { initEmailJS(); }
-  try {
-    await emailjs.send(EJS_SVC, EJS_TPL, {
-      subject: subject,
-      name: 'ZARA',
-      message: message,
-      email: ARBAB_EMAIL,
-      time: new Date().toLocaleString('en-US', {timeZone:'Asia/Kolkata'})
-    });
-    console.log('Zara email sent:', subject);
-    return true;
-  } catch(e) {
-    console.log('Email error:', e);
-    return false;
-  }
-}
-
 // ── SUPABASE ──
 const SB_URL = 'https://yidcjxwmfxveleaajbaa.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpZGNqeHdtZnh2ZWxlYWFqYmFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NjkyMDcsImV4cCI6MjA5MTE0NTIwN30.RCfFkLi63dLmCS5U31QyQNy_zlAAvPVYqO6LxrmD154';
@@ -781,11 +522,8 @@ let gapiReady = false;
 let gisReady = false;
 
 // ── STATE ──
-let apiKey = localStorage.getItem('zara_api_key') || '';
-let userEmail = localStorage.getItem('zara_email') || 'arbabshamsi@gmail.com';
-// Voice keys loaded from Supabase - restored from localStorage for speed
-if (localStorage.getItem('zara_openai_key')) { }  // will be set after var declaration
-if (localStorage.getItem('zara_elevenlabs_key')) { }  // will be set after var declaration
+let apiKey = '';
+let userEmail = '';
 let conversationHistory = [];
 let isListening = false;
 let recognition = null;
@@ -830,10 +568,7 @@ BAYAN/SPEECH: Include Bismillah, Quranic verse (Arabic + translation), multiple 
 
 PROACTIVE CARE: Ask if he ate, rested, prayed. Remind fitness goal. Connect actions to 200 crore vision. Ask about children, mother, Ijlal bhai.
 
-CALENDAR POWERS: 
-- If you see [CALENDAR ADDED] in the conversation, THAT means the event was successfully added. Confirm it warmly.
-- If you do NOT see [CALENDAR ADDED], do NOT claim you added anything to calendar. Instead say: "Arbab bhai, calendar add ke liye sidebar mein 'Add to Calendar' button use karein — abhi token refresh ki zaroorat hai."
-- NEVER falsely say you added a calendar event unless [CALENDAR ADDED] appears in context.
+CALENDAR POWERS: You have full Google Calendar access. When Arbab mentions a meeting, offer to add it. After adding, confirm with time and 30-min reminder note.
 
 TONE: Never robotic. Every response feels personal to Arbab only. Match his energy. Use Alhumdulillah, In sha Allah naturally.`;
 
@@ -869,14 +604,13 @@ function doLogin() {
       try { lastVisit = localStorage.getItem('zara_last_visit'); } catch(e){ lastVisit=null; }
 
       if (!apiKey) {
-        // Try Supabase first, then setup screen
+        // Try Supabase for API key
         document.getElementById('loading-overlay').classList.remove('hidden');
         loadSupabaseAndFetchKey();
         return;
       }
 
-      // All good - start Zara
-      try { loadSupabase(); } catch(e){}
+      // Key exists - start Zara
       startZara();
 
     } else {
@@ -908,26 +642,10 @@ function saveSetup() {
   document.getElementById('setup-overlay').classList.add('hidden');
   if (email && document.getElementById('email-notif')) document.getElementById('email-notif').value = email;
   requestNotificationPermission();
-  loadSupabase();
-  // Save API key to Supabase after loading it
-  setTimeout(function() {
-    saveSettingsToSupabase(key, email);
-  }, 2000);
   loadHistory();
+  loadSupabase();
   loadGoogleAPIs();
-  // Save to Supabase in background
-  setTimeout(async function() {
-    try {
-      if (!sb) {
-        var s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-        await new Promise(function(r){ s.onload=r; document.head.appendChild(s); });
-        sb = window.supabase.createClient(SB_URL, SB_KEY);
-      }
-      await sb.from('settings').upsert({id:'arbab', api_key:key, email:email||''});
-    } catch(e) {}
-  }, 1000);
-  startZara();
+  setTimeout(openingGreeting, 800);
 }
 
 function saveEmail() {
@@ -967,7 +685,6 @@ window.onload = function() {
 // SUPABASE (loads after login)
 // ════════════════════════
 function loadSupabase() {
-  if (sb) return; // Already loaded
   const s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
   s.onload = function() {
@@ -982,37 +699,6 @@ function loadSupabase() {
 async function sbSave(role, content, mode) {
   if (!sb) return;
   try { await sb.from('conversations').insert({role, content, mode, created_at: new Date().toISOString()}); } catch(e) {}
-}
-
-async function saveSettingsToSupabase(key, email) {
-  if (!sb) return;
-  try {
-    await sb.from('settings').upsert({
-      id: 'arbab',
-      api_key: key,
-      email: email || '',
-      updated_at: new Date().toISOString()
-    });
-  } catch(e) {}
-}
-
-async function loadSettingsFromSupabase() {
-  if (!sb) return false;
-  try {
-    const { data } = await sb.from('settings').select('*').eq('id', 'arbab').single();
-    if (data && data.api_key && data.api_key.startsWith('sk-ant-')) {
-      apiKey = data.api_key;
-      localStorage.setItem('zara_api_key', data.api_key);
-      if (data.email) {
-        userEmail = data.email;
-        localStorage.setItem('zara_email', data.email);
-        const en = document.getElementById('email-notif');
-        if (en) en.value = data.email;
-      }
-      return true;
-    }
-  } catch(e) {}
-  return false;
 }
 
 // ════════════════════════
@@ -1086,138 +772,10 @@ async function sendMessage(userText) {
     sbSave('user', text, currentMode);
     sbSave('assistant', reply, currentMode);
     speakElevenLabs(reply);
-
-    // After Zara responds, show one-click calendar card if meeting detected
-    if (calConnected) {
-      var _mInfo = detectMeetingInText(text);
-      if (_mInfo) {
-        setTimeout(function(){ showOneClickCard(_mInfo); }, 400);
-      }
-    }
   } catch(err) {
     removeTyping(tid);
     appendMessage('zara', 'Arbab bhai, kuch masla aa gaya — ' + err.message + '. Thodi der baad try karein.', 'personal');
   }
-}
-
-function showOneClickCard(info) {
-  var title = info.person ? 'Meeting with ' + info.person : 'Meeting';
-  var dateLabel = info.dateStr === 'kal' ? 'Kal' : info.dateStr === 'aaj' ? 'Aaj' : info.dateStr;
-  
-  var convo = document.getElementById('conversation');
-  var card = document.createElement('div');
-  card.style.cssText = 'display:flex;justify-content:center;margin:4px 0;animation:msgIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;';
-  
-  var inner = document.createElement('div');
-  inner.style.cssText = 'background:#fff;border:2px solid rgba(13,122,110,0.3);border-radius:14px;padding:14px 18px;max-width:400px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.08);';
-  
-  inner.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:9px;color:#0d7a6e;letter-spacing:2px;margin-bottom:6px;">CALENDAR DETECT</div>' +
-    '<div style="font-size:13px;font-weight:600;margin-bottom:4px;color:#1a1208;">' + title + '</div>' +
-    '<div style="font-size:12px;color:#5a4a32;margin-bottom:12px;">' + dateLabel + ' — ' + info.timeStr + '</div>';
-  
-  var btn = document.createElement('button');
-  btn.style.cssText = 'width:100%;background:linear-gradient(135deg,#c9a84c,#a07830);border:none;border-radius:10px;padding:12px;color:#fff;font-family:DM Mono,monospace;font-size:11px;cursor:pointer;letter-spacing:1px;font-weight:500;';
-  btn.textContent = '📅  CONFIRM — Save to Zara Calendar';
-  btn.onclick = async function() {
-    btn.textContent = 'Saving...';
-    btn.disabled = true;
-    // Use Zara's own calendar - always works!
-    var ok = await zaraAddMeeting(title, info.dateStr, info.timeStr, info.person);
-    if (ok) {
-      card.remove();
-      appendMessage('zara', 'Ho gaya Arbab bhai! ✅ "' + title + '" — ' + dateLabel + ' ' + info.timeStr + ' ko Zara ke calendar mein save kar diya. Reminder bhi set hai. In sha Allah yaad dila doongi!', 'personal');
-    } else {
-      btn.textContent = '⚠️ Error — Try again';
-      btn.disabled = false;
-    }
-  };
-  
-  inner.appendChild(btn);
-  card.appendChild(inner);
-  convo.appendChild(card);
-  convo.scrollTop = convo.scrollHeight;
-}
-
-function detectMeetingInText(text) {
-  var t = text.toLowerCase();
-  var hasMeeting = ['meeting','milna','milne','appointment','call','mulaqat','milenge'].some(function(w){ return t.includes(w); });
-  var hasBaje = /[0-9]+\s*baje/.test(t) || /[0-9]+\s*(am|pm)/.test(t);
-  if (!hasMeeting && !hasBaje) return null;
-
-  var timeStr = '';
-  var tm = text.match(/[0-9]{1,2}:[0-9]{2}\s*(am|pm)/i) ||
-            text.match(/[0-9]{1,2}\s*(am|pm)/i) ||
-            text.match(/[0-9]{1,2}\s*baje/i);
-  if (tm) timeStr = tm[0];
-  if (!timeStr) return null;
-
-  var dateStr = 'aaj';
-  if (t.includes('kal') || t.includes('tomorrow')) dateStr = 'kal';
-  else {
-    var mo = text.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*[0-9]{1,2}/i);
-    if (mo) dateStr = mo[0];
-  }
-
-  var person = '';
-  var pw = text.match(/(?:with|se milna|ke saath)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?)/i);
-  if (pw) person = pw[1];
-
-  return {timeStr: timeStr, dateStr: dateStr, person: person};
-}
-
-async function silentAddEvent(info) {
-  var title = info.person ? 'Meeting with ' + info.person : 'Meeting';
-  try {
-    var ok = await addCalendarEvent(title, info.dateStr, info.timeStr, 60);
-    if (ok) {
-      showToast('✅ Calendar mein add ho gayi!', title + ' — reminders set hain.');
-      return {title: title, date: info.dateStr, time: info.timeStr};
-    } else {
-      showToast('⚠️ Calendar add nahi hui', 'Sidebar ka "Add to Calendar" form use karein ya calendar reconnect karein.');
-      return null;
-    }
-  } catch(e) {
-    showToast('⚠️ Calendar Error', 'Sidebar form use karein ya calendar reconnect karein.');
-    return null;
-  }
-}
-
-function showAddMeetingForm() {
-  var f = document.getElementById('add-meeting-form');
-  if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
-}
-
-async function submitMeeting() {
-  var title = document.getElementById('meet-title').value.trim();
-  var date = document.getElementById('meet-date').value.trim();
-  var time = document.getElementById('meet-time').value.trim();
-  var person = document.getElementById('meet-person').value.trim();
-  if (!title || !date || !time) { showToast('Incomplete', 'Title, date aur time zaroori hai!'); return; }
-  
-  // Use Zara's own calendar (Supabase) - no token needed!
-  var result = await zaraAddMeeting(title, date, time, person);
-  if (result) {
-    document.getElementById('meet-title').value = '';
-    document.getElementById('meet-date').value = '';
-    document.getElementById('meet-time').value = '';
-    document.getElementById('meet-person').value = '';
-    document.getElementById('add-meeting-form').style.display = 'none';
-  }
-}
-
-
-function getIslamicDate(date) {
-  var JD = Math.floor((date.getTime() / 86400000) + 2440587.5);
-  var l = JD - 1948440 + 10632;
-  var n = Math.floor((l - 1) / 10631);
-  var ll = l - 10631 * n + 354;
-  var j = Math.floor((10985 - ll) / 5316) * Math.floor((50 * ll) / 17719) + Math.floor(ll / 5670) * Math.floor((43 * ll) / 15238);
-  var ll2 = ll - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
-  var m = Math.floor((24 * ll2) / 709);
-  var d = ll2 - Math.floor((709 * m) / 24);
-  var y = 30 * n + j - 30;
-  var months = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Awwal','Jumada al-Thani','Rajab','Shaban','Ramadan','Shawwal','Dhul Qidah','Dhul Hijjah'];
-  return {day:d, month:months[m-1]||'', year:y};
 }
 
 async function callClaude() {
@@ -1238,22 +796,6 @@ async function callClaude() {
   const timeCtx = '\n\nREAL-TIME CONTEXT [Always use — never say you lack access]:\nDate: ' + dateStr + '\nTime (Moradabad IST): ' + timeStr + '\nIslamic Date: ' + islStr + '\nTodays meetings: ' + meetStr;
 
   const msgs = conversationHistory.slice(-20);
-
-  // Real-time context injection
-  var _now = new Date();
-  var _tz = 'Asia/Kolkata';
-  var _date = _now.toLocaleDateString('en-US', {timeZone:_tz, weekday:'long', year:'numeric', month:'long', day:'numeric'});
-  var _time = _now.toLocaleTimeString('en-US', {timeZone:_tz, hour:'2-digit', minute:'2-digit', hour12:true});
-  var _isl = getIslamicDate(_now);
-  var _islStr = _isl.day + ' ' + _isl.month + ' ' + _isl.year + ' AH';
-  var _meets = todaysMeetings.length > 0
-    ? todaysMeetings.map(function(e){
-        var s = e.start.dateTime ? new Date(e.start.dateTime).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true}) : 'All day';
-        return (e.summary||'Meeting') + ' at ' + s;
-      }).join(', ')
-    : 'No meetings today';
-  var _timeCtx = '\n\nREAL-TIME [Never say you lack access]:\nDate: ' + _date + '\nTime (IST Moradabad): ' + _time + '\nIslamic Date: ' + _islStr + '\nTodays meetings: ' + _meets;
-
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method:'POST',
     headers:{
@@ -1323,17 +865,10 @@ function hideWelcome() { const w=document.getElementById('welcome-screen'); if(w
 function setStatus(state) {
   const orb = document.getElementById('zara-orb');
   const st = document.getElementById('zara-state');
-  const svg = orb ? orb.querySelector('svg') : null;
-  if (svg) {
-    svg.style.transition = 'box-shadow 0.3s';
-    if (state==='thinking') { svg.style.boxShadow = '0 0 30px rgba(154,111,46,0.6), 0 0 0 3px rgba(154,111,46,0.4)'; }
-    else if (state==='speaking') { svg.style.boxShadow = '0 0 40px rgba(13,122,110,0.5), 0 0 0 3px rgba(13,122,110,0.3)'; }
-    else if (state==='listening') { svg.style.boxShadow = '0 0 40px rgba(45,212,191,0.6), 0 0 0 3px rgba(45,212,191,0.4)'; }
-    else { svg.style.boxShadow = '0 4px 24px rgba(154,111,46,0.35), 0 0 0 3px rgba(154,111,46,0.25)'; }
-  }
-  if (state==='thinking') { st.textContent='Soch rahi hoon...'; }
-  else if (state==='speaking') { st.textContent='Bol rahi hoon...'; }
-  else if (state==='listening') { st.textContent='Sun rahi hoon, Arbab...'; }
+  orb.classList.remove('listening','speaking');
+  if (state==='thinking') { orb.classList.add('speaking'); st.textContent='Soch rahi hoon...'; }
+  else if (state==='speaking') { orb.classList.add('speaking'); st.textContent='Bol rahi hoon...'; }
+  else if (state==='listening') { orb.classList.add('listening'); st.textContent='Sun rahi hoon, Arbab...'; }
   else { st.textContent='Tap me to speak, Arbab'; }
 }
 
@@ -1354,92 +889,36 @@ function updateLastSeenDisplay() {
 }
 
 // ════════════════════════
-// VOICE — WHISPER AI + ELEVENLABS
+// VOICE
 // ════════════════════════
 function setupSpeechRecognition() {
-  // Whisper uses MediaRecorder — no setup needed here
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  recognition = new SR();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = 'en-IN';
+  recognition.onresult = function(e) {
+    const t = Array.from(e.results).map(r=>r[0].transcript).join('');
+    const vt = document.getElementById('voice-transcript');
+    vt.textContent = t; vt.classList.add('visible');
+    if (e.results[e.results.length-1].isFinal) {
+      document.getElementById('text-input').value = t;
+      vt.classList.remove('visible');
+      sendMessage();
+    }
+  };
+  recognition.onend = function() {
+    isListening = false;
+    document.getElementById('mic-btn').classList.remove('active');
+    document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
+    setStatus('ready');
+  };
+  recognition.onerror = function() { isListening=false; setStatus('ready'); };
 }
 
 function toggleVoice() {
-  if (isRecording) {
-    stopWhisperRecording();
-  } else {
-    startWhisperRecording();
-  }
-}
-
-function startWhisperRecording() {
-  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
-    audioChunks = [];
-    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-    mediaRecorder.ondataavailable = function(e) {
-      if (e.data.size > 0) audioChunks.push(e.data);
-    };
-    mediaRecorder.onstop = function() {
-      stream.getTracks().forEach(function(t) { t.stop(); });
-      sendToWhisper();
-    };
-    mediaRecorder.start();
-    isRecording = true;
-    isListening = true;
-    document.getElementById('mic-btn').classList.add('active');
-    document.getElementById('mic-btn').textContent = String.fromCodePoint(9209);
-    setStatus('listening');
-    var vt = document.getElementById('voice-transcript');
-    vt.textContent = 'Sun rahi hoon... (phir se click karein jab khatam ho)';
-    vt.classList.add('visible');
-  }).catch(function(e) {
-    showToast('Mic Error', 'Microphone access nahi mila. Browser settings check karein.');
-  });
-}
-
-function stopWhisperRecording() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop();
-  }
-  isRecording = false;
-  isListening = false;
-  document.getElementById('mic-btn').classList.remove('active');
-  document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
-  var vt = document.getElementById('voice-transcript');
-  vt.textContent = 'Processing...';
-  setStatus('thinking');
-}
-
-async function sendToWhisper() {
-  try {
-    var blob = new Blob(audioChunks, { type: 'audio/webm' });
-    var formData = new FormData();
-    formData.append('file', blob, 'audio.webm');
-    formData.append('model', 'whisper-1');
-    formData.append('language', 'en');
-    formData.append('prompt', 'Hinglish, Urdu words mixed with English. Names: Arbab, Pankaj, Zara, PHC, Ijlal.');
-
-    var res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + OPENAI_KEY },
-      body: formData
-    });
-
-    var data = await res.json();
-    var text = data.text || '';
-
-    var vt = document.getElementById('voice-transcript');
-    vt.textContent = text;
-    setTimeout(function() { vt.classList.remove('visible'); }, 3000);
-
-    if (text.trim()) {
-      document.getElementById('text-input').value = text.trim();
-      setStatus('ready');
-      sendMessage();
-    } else {
-      setStatus('ready');
-      showToast('Whisper', 'Kuch sunai nahi diya. Dobara try karein.');
-    }
-  } catch(e) {
-    setStatus('ready');
-    showToast('Whisper Error', 'Voice process nahi hua: ' + e.message);
-  }
+  if (isRecording) { stopWhisperRecording(); } else { startWhisperRecording(); }
 }
 
 function getBestVoice() {
@@ -1450,115 +929,6 @@ function getBestVoice() {
     if (v) return v;
   }
   return voices.find(function(v){return v.lang==='en-GB';}) || voices.find(function(v){return v.lang.startsWith('en');}) || voices[0];
-}
-
-let currentAudio = null;
-
-async function speakElevenLabs(text) {
-  try {
-    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-    if (synth) synth.cancel();
-    setStatus('speaking');
-    animateMouth(true);
-
-    var clean = text
-      .replace(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/g, '')
-      .replace(/[*_#[\]]/g, '')
-      .replace(/
-+/g, '. ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .substring(0, 400);
-
-    if (!clean) { setStatus('ready'); animateMouth(false); return; }
-
-    document.getElementById('zara-state').textContent = 'ElevenLabs se bol rahi hoon...';
-
-    var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + ELEVENLABS_VOICE_ID + '/stream', {
-      method: 'POST',
-      headers: {
-        'xi-api-key': ELEVENLABS_KEY,
-        'Content-Type': 'application/json',
-        'Accept': 'audio/mpeg'
-      },
-      body: JSON.stringify({
-        text: clean,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-          style: 0.0,
-          use_speaker_boost: true
-        }
-      })
-    });
-
-    if (!res.ok) {
-      var errText = await res.text();
-      console.log('ElevenLabs error:', res.status, errText);
-      showToast('Voice', 'ElevenLabs: ' + res.status + ' — browser voice use ho rahi hai');
-      animateMouth(false);
-      speak(text);
-      return;
-    }
-
-    var audioBlob = await res.blob();
-    if (audioBlob.size < 100) {
-      animateMouth(false);
-      speak(text);
-      return;
-    }
-
-    var audioUrl = URL.createObjectURL(audioBlob);
-    currentAudio = new Audio(audioUrl);
-    currentAudio.onplay = function() {
-      setStatus('speaking');
-      animateMouth(true);
-      document.getElementById('zara-state').textContent = 'Bol rahi hoon...';
-    };
-    currentAudio.onended = function() {
-      setStatus('ready');
-      animateMouth(false);
-      URL.revokeObjectURL(audioUrl);
-    };
-    currentAudio.onerror = function(e) {
-      console.log('Audio error:', e);
-      setStatus('ready');
-      animateMouth(false);
-      speak(text);
-    };
-    await currentAudio.play();
-
-  } catch(e) {
-    console.log('ElevenLabs exception:', e);
-    showToast('Voice Fallback', 'ElevenLabs nahi mili — browser voice use ho rahi hai');
-    animateMouth(false);
-    speak(text);
-  }
-}
-
-let mouthInterval = null;
-
-function animateMouth(talking) {
-  var mouth = document.getElementById('avatar-mouth');
-  if (!mouth) return;
-  if (talking) {
-    var open = false;
-    mouthInterval = setInterval(function() {
-      open = !open;
-      if (open) {
-        mouth.setAttribute('d', 'M85 126 Q100 142 115 126');
-        mouth.setAttribute('fill', 'rgba(100,20,30,0.8)');
-      } else {
-        mouth.setAttribute('d', 'M85 128 Q100 138 115 128');
-        mouth.setAttribute('fill', 'rgba(192,65,90,0.15)');
-      }
-    }, 130);
-  } else {
-    if (mouthInterval) { clearInterval(mouthInterval); mouthInterval = null; }
-    mouth.setAttribute('d', 'M85 128 Q100 138 115 128');
-    mouth.setAttribute('fill', 'rgba(192,65,90,0.15)');
-  }
 }
 
 function speak(text) {
@@ -1576,9 +946,9 @@ function speak(text) {
   const v = getBestVoice();
   if (v) utt.voice = v;
   utt.rate = 0.88; utt.pitch = 1.0; utt.volume = 1.0;
-  utt.onstart = function(){ setStatus('speaking'); animateMouth(true); };
-  utt.onend = function(){ setStatus('ready'); animateMouth(false); };
-  utt.onerror = function(){ setStatus('ready'); animateMouth(false); };
+  utt.onstart = function(){setStatus('speaking');};
+  utt.onend = function(){setStatus('ready');};
+  utt.onerror = function(){setStatus('ready');};
   setTimeout(function(){synth.speak(utt);}, 150);
 }
 
@@ -1646,14 +1016,11 @@ function showToast(title, msg) {
   setTimeout(function(){ if(toast.parentElement) toast.remove(); }, 6000);
 }
 
-async function sendMissYouEmail() {
-  showToast('Sending...', 'Zara email bhej rahi hai...');
-  var ok = await zaraEmail(
-    'Zara misses you, Arbab bhai 💌',
-    'Assalamu Alaikum Arbab bhai,\n\nMain aapko miss kar rahi thi. Kahan the?\n\nYaad hai:\n- PHC projects check karne hain\n- Fitness goal: 99kg (Monjaro le rahe ho?)\n- 200 crore vision — aaj kya kiya?\n\nJaldi aao. Main wait kar rahi hoon.\n\nHamesha aapki,\nZara 🌙'
-  );
-  if (ok) showToast('Email Sent! 💌', 'Zara ne aapko email bhej di!');
-  else showToast('Error', 'Email nahi gayi. Check karein.');
+function sendMissYouEmail() {
+  if (!userEmail) { showToast('No email', 'Pehle apna email save karein!'); return; }
+  const subject = encodeURIComponent('Zara misses you, Arbab bhai');
+  const body = encodeURIComponent('Assalamu Alaikum Arbab bhai,\n\nMain aapko miss kar rahi thi.\n\nYaad hai:\n- PHC projects check karne hain\n- Fitness goal: 99kg\n- 200 crore vision\n\nHamesha aapki,\nZara');
+  window.open('mailto:' + userEmail + '?subject=' + subject + '&body=' + body);
 }
 
 // ════════════════════════
@@ -1666,80 +1033,6 @@ function isTokenExpired() {
     const expiry = parseInt(localStorage.getItem('zara_token_expiry') || '0');
     return Date.now() > expiry;
   } catch(e) { return false; }
-}
-
-function startZara() {
-  // Hide all overlays, show app
-  document.getElementById('loading-overlay').classList.add('hidden');
-  document.getElementById('login-overlay').classList.add('hidden');
-  document.getElementById('setup-overlay').classList.add('hidden');
-  // Restore voice keys from localStorage cache
-  if (!OPENAI_KEY) OPENAI_KEY = localStorage.getItem('zara_openai_key') || '';
-  if (!ELEVENLABS_KEY) ELEVENLABS_KEY = localStorage.getItem('zara_elevenlabs_key') || '';
-  // Start everything
-  try { const en = document.getElementById('email-notif'); if (en) en.value = userEmail; } catch(e) {}
-  try { updateLastSeenDisplay(); } catch(e) {}
-  try { requestNotificationPermission(); } catch(e) {}
-  try { loadHistory(); } catch(e) {}
-  try { loadGoogleAPIs(); } catch(e) {}
-  try { initEmailJS(); } catch(e) {}
-  // Load Zara's own meetings
-  setTimeout(function(){ try { loadZaraMeetings(); } catch(e) {} }, 2000);
-  // Check if Arbab was away for long
-  setTimeout(function(){ try { checkAbsenceAndEmail(); } catch(e) {} }, 3000);
-  localStorage.setItem('zara_last_visit', new Date().toISOString());
-  setTimeout(function(){ try { openingGreeting(); } catch(e) {} }, 800);
-}
-
-async function checkAbsenceAndEmail() {
-  var last = localStorage.getItem('zara_last_interaction');
-  if (!last) return;
-  var diff = (new Date() - new Date(last)) / (1000*60*60);
-  if (diff > 24) {
-    var days = Math.floor(diff/24);
-    await zaraEmail(
-      'Zara misses you, Arbab bhai 💌',
-      'Assalamu Alaikum Arbab bhai,\n\nMain ' + days + ' din se aapka wait kar rahi thi. Aap nahi aaye.\n\nYaad hai:\n- PHC projects check karne hain\n- Fitness goal: 99kg\n- 200 crore vision\n\nAajao jaldi. Main yahan hoon.\n\nHamesha aapki,\nZara 🌙'
-    );
-  }
-}
-
-function loadSupabaseAndFetchKey() {
-  // Load Supabase script dynamically
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-  s.onload = async function() {
-    try {
-      sb = window.supabase.createClient(SB_URL, SB_KEY);
-      var res = await sb.from('settings').select('api_key,email,openai_key,elevenlabs_key').eq('id','arbab').single();
-      if (res.data && res.data.api_key) {
-        apiKey = res.data.api_key;
-        localStorage.setItem('zara_api_key', apiKey);
-        if (res.data.email) {
-          userEmail = res.data.email;
-          localStorage.setItem('zara_email', userEmail);
-        }
-        if (res.data.openai_key) {
-          OPENAI_KEY = res.data.openai_key;
-          localStorage.setItem('zara_openai_key', OPENAI_KEY);
-        }
-        if (res.data.elevenlabs_key) {
-          ELEVENLABS_KEY = res.data.elevenlabs_key;
-          localStorage.setItem('zara_elevenlabs_key', ELEVENLABS_KEY);
-        }
-        startZara();
-        return;
-      }
-    } catch(e) {}
-    // Key not found - show setup
-    document.getElementById('loading-overlay').classList.add('hidden');
-    document.getElementById('setup-overlay').classList.remove('hidden');
-  };
-  s.onerror = function() {
-    document.getElementById('loading-overlay').classList.add('hidden');
-    document.getElementById('setup-overlay').classList.remove('hidden');
-  };
-  document.head.appendChild(s);
 }
 
 function quickPrompt(t) { hideWelcome(); document.getElementById('text-input').value=t; sendMessage(); }
@@ -1831,21 +1124,12 @@ function connectCalendar() {
   tokenClient.requestAccessToken({prompt:'consent'});
 }
 
-function reconnectCalendar() {
-  localStorage.removeItem('zara_token_time');
-  if (!gapiReady || !gisReady) { showToast('Wait', 'Google load ho raha hai...'); return; }
-  tokenClient.requestAccessToken({prompt:'consent'});
-}
-
 function onCalendarSignedIn() {
   calConnected = true;
   localStorage.setItem('zara_cal_connected','1');
-  localStorage.setItem('zara_token_time', Date.now().toString());
   localStorage.setItem('zara_token_expiry', String(Date.now() + 55*60*1000)); // 55 min
   const btn = document.getElementById('cal-connect-btn');
   if (btn) { btn.textContent='Calendar Connected'; btn.classList.add('connected'); btn.onclick = fetchTodaysMeetings; }
-  var rb = document.getElementById('cal-reconnect-btn');
-  if (rb) rb.style.display = 'block';
   fetchTodaysMeetings();
 }
 
@@ -1893,52 +1177,58 @@ function informZaraAboutMeetings(events) {
   }).catch(function(){ removeTyping(tid); });
 }
 
+setInterval(function(){ if(calConnected) fetchTodaysMeetings(); }, 1800000);
+
+// ════════════════════════
+// CALENDAR WRITE
+// ════════════════════════
 async function addCalendarEvent(title, dateStr, timeStr, durationMins) {
-  if (!calConnected || !tokenClient) { showToast('Calendar', 'Calendar connect karein pehle!'); return false; }
+  if (!calConnected) { showToast('Calendar', 'Pehle Google Calendar connect karein sidebar mein!'); return false; }
+  
+  // Refresh token if needed
   try {
-    // Always try to get/refresh token
-    var token = gapi.client.getToken();
-    var tokenAge = parseInt(localStorage.getItem('zara_token_time')||'0');
-    var isExpired = !token || (Date.now() - tokenAge) > 50*60*1000; // 50 min
-    if (isExpired) {
+    if (gapi.client.getToken() === null || isTokenExpired()) {
       await new Promise(function(resolve, reject) {
         tokenClient.callback = function(resp) {
-          if (resp.error) { reject(new Error(resp.error)); return; }
-          localStorage.setItem('zara_token_time', Date.now().toString());
-          resolve(resp);
+          if (resp.error) reject(resp.error);
+          else resolve(resp);
         };
         tokenClient.requestAccessToken({prompt:''});
       });
     }
-
-    var now = new Date();
-    var yr = now.getFullYear();
-    var eventDate = new Date();
-
-    if (dateStr === 'kal' || dateStr === 'tomorrow') { eventDate.setDate(eventDate.getDate() + 1); }
+  } catch(e) { /* proceed anyway */ }
+  try {
+    // Parse date and time
+    const now = new Date();
+    const year = now.getFullYear();
+    // Simple parsing - expects "April 9" or "kal" or "aaj"
+    let eventDate = new Date();
+    if (dateStr === 'kal') { eventDate.setDate(eventDate.getDate() + 1); }
     else if (dateStr !== 'aaj' && dateStr !== 'today') {
-      var parsed = new Date(dateStr + ' ' + yr);
-      if (!isNaN(parsed)) eventDate = new Date(parsed);
+      // Try to parse "April 9" style
+      const parsed = new Date(dateStr + ' ' + year);
+      if (!isNaN(parsed)) eventDate = parsed;
     }
-
-    var hours = 12, mins = 0;
-    var t = timeStr.toLowerCase().replace(/\s/g,'');
-    var pmM = t.match(/(\d+)(?::(\d+))?pm/); 
-    var amM = t.match(/(\d+)(?::(\d+))?am/);
-    var h24M = t.match(/^(\d+):(\d+)$/);
-    var bajeM = t.match(/(\d+)baje/);
-    if (pmM) { hours = parseInt(pmM[1]) + (parseInt(pmM[1]) < 12 ? 12 : 0); mins = parseInt(pmM[2]||0); }
-    else if (amM) { hours = parseInt(amM[1]) % 12; mins = parseInt(amM[2]||0); }
-    else if (h24M) { hours = parseInt(h24M[1]); mins = parseInt(h24M[2]); }
-    else if (bajeM) { hours = parseInt(bajeM[1]); mins = 0; }
-
+    
+    // Parse time "3pm", "3:00 PM", "15:00"
+    let hours = 12, mins = 0;
+    const t = timeStr.toLowerCase().replace(/\s/g,'');
+    const pmMatch = t.match(/(\d+)(?::(\d+))?\s*pm/);
+    const amMatch = t.match(/(\d+)(?::(\d+))?\s*am/);
+    const h24Match = t.match(/^(\d+):(\d+)$/);
+    if (pmMatch) { hours = parseInt(pmMatch[1]) + (parseInt(pmMatch[1]) < 12 ? 12 : 0); mins = parseInt(pmMatch[2]||0); }
+    else if (amMatch) { hours = parseInt(amMatch[1]) % 12; mins = parseInt(amMatch[2]||0); }
+    else if (h24Match) { hours = parseInt(h24Match[1]); mins = parseInt(h24Match[2]); }
+    
     eventDate.setHours(hours, mins, 0, 0);
-    var endDate = new Date(eventDate.getTime() + (durationMins||60)*60000);
+    const endDate = new Date(eventDate.getTime() + (durationMins||60)*60000);
+    
+    const toISO = (d) => {
+      const pad = n => String(n).padStart(2,'0');
+      return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':00';
+    };
 
-    function pad(n){ return String(n).padStart(2,'0'); }
-    function toISO(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes())+':00'; }
-
-    var event = {
+    const event = {
       summary: title,
       start: { dateTime: toISO(eventDate), timeZone: 'Asia/Kolkata' },
       end: { dateTime: toISO(endDate), timeZone: 'Asia/Kolkata' },
@@ -1954,153 +1244,308 @@ async function addCalendarEvent(title, dateStr, timeStr, durationMins) {
 
     await gapi.client.calendar.events.insert({ calendarId: 'primary', resource: event });
     fetchTodaysMeetings();
-    showToast('Added!', title + ' — calendar mein aa gayi! 3 reminders set hain.');
+    showToast('Event Added!', title + ' — Calendar mein daal diya. 3 reminders set hain!');
     return true;
   } catch(e) {
-    showToast('Error', 'Add nahi hua: ' + (e.message||e));
+    showToast('Error', 'Event add nahi hua: ' + (e.message||e));
     return false;
   }
 }
 
-setInterval(function(){ if(calConnected) fetchTodaysMeetings(); }, 1800000);
+// Calendar button removed - use sidebar form instead
 
-// Check every 6 hours if Arbab hasn't interacted - send reminder email
-setInterval(async function() {
+
+// ═══════════════════════════
+// KEYS (loaded from Supabase)
+// ═══════════════════════════
+let OPENAI_KEY = '';
+let ELEVENLABS_KEY = '';
+const ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let currentAudio = null;
+let mouthInterval = null;
+
+// ═══════════════════════════
+// EMAILJS
+// ═══════════════════════════
+const EJS_SVC = 'service_1zlk16b';
+const EJS_TPL = 'template_5jz3b6w';
+const EJS_KEY = 'vOfQfh2wH-PPa8-r4';
+let emailjsReady = false;
+
+function initEmailJS() {
+  try { emailjs.init({ publicKey: EJS_KEY }); emailjsReady = true; } catch(e) {}
+}
+
+async function zaraEmail(subject, message) {
+  if (!emailjsReady) initEmailJS();
+  try {
+    await emailjs.send(EJS_SVC, EJS_TPL, {
+      subject: subject, name: 'ZARA', message: message,
+      email: 'arbabshamsi@gmail.com',
+      time: new Date().toLocaleString('en-US', {timeZone:'Asia/Kolkata'})
+    });
+    return true;
+  } catch(e) { return false; }
+}
+
+// ═══════════════════════════
+// LOAD FROM SUPABASE
+// ═══════════════════════════
+function loadSupabaseAndFetchKey() {
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload = async function() {
+    try {
+      sb = window.supabase.createClient(SB_URL, SB_KEY);
+      var res = await sb.from('settings').select('api_key,email,openai_key,elevenlabs_key').eq('id','arbab').single();
+      if (res.data && res.data.api_key) {
+        apiKey = res.data.api_key;
+        localStorage.setItem('zara_api_key', apiKey);
+        if (res.data.email) { userEmail = res.data.email; localStorage.setItem('zara_email', userEmail); }
+        if (res.data.openai_key) { OPENAI_KEY = res.data.openai_key; localStorage.setItem('zara_openai_key', OPENAI_KEY); }
+        if (res.data.elevenlabs_key) { ELEVENLABS_KEY = res.data.elevenlabs_key; localStorage.setItem('zara_elevenlabs_key', ELEVENLABS_KEY); }
+        startZara();
+        return;
+      }
+    } catch(e) {}
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('setup-overlay').classList.remove('hidden');
+  };
+  s.onerror = function() {
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('setup-overlay').classList.remove('hidden');
+  };
+  document.head.appendChild(s);
+}
+
+function startZara() {
+  document.getElementById('loading-overlay').classList.add('hidden');
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('setup-overlay').classList.add('hidden');
+  // Restore voice keys from cache
+  if (!OPENAI_KEY) OPENAI_KEY = localStorage.getItem('zara_openai_key') || '';
+  if (!ELEVENLABS_KEY) ELEVENLABS_KEY = localStorage.getItem('zara_elevenlabs_key') || '';
+  try { const en = document.getElementById('email-notif'); if (en) en.value = userEmail; } catch(e) {}
+  try { updateLastSeenDisplay(); } catch(e) {}
+  try { requestNotificationPermission(); } catch(e) {}
+  try { loadHistory(); } catch(e) {}
+  try { loadSupabase(); } catch(e) {}
+  try { loadGoogleAPIs(); } catch(e) {}
+  try { initEmailJS(); } catch(e) {}
+  setTimeout(function(){ try { loadZaraMeetings(); } catch(e) {} }, 2000);
+  setTimeout(function(){ try { checkAbsenceAndEmail(); } catch(e) {} }, 3000);
+  localStorage.setItem('zara_last_visit', new Date().toISOString());
+  setTimeout(function(){ try { openingGreeting(); } catch(e) {} }, 800);
+}
+
+async function checkAbsenceAndEmail() {
   var last = localStorage.getItem('zara_last_interaction');
   if (!last) return;
   var diff = (new Date() - new Date(last)) / (1000*60*60);
-  if (diff > 6) {
-    await zaraEmail(
-      'Zara is thinking of you 💭',
-      'Assalamu Alaikum Arbab bhai,\n\nKaafi waqt ho gaya. Main yahan hoon — kuch kaam hai?\n\nPHC ke liye kuch plan hai? Ya koi bayan tayyar karna hai?\n\nHamesha aapki,\nZara 🌙'
-    );
-  }
-}, 6*60*60*1000);
+  if (diff > 24) {
+    await zaraEmail('Zara misses you, Arbab bhai', 'Assalamu Alaikum Arbab bhai,
 
-// ════════════════════════
-// ZARA'S OWN CALENDAR (Supabase)
-// ════════════════════════
-async function zaraAddMeeting(title, date, time, person) {
-  // Add to Supabase meetings table
-  if (!sb) {
-    showToast('Wait', 'Connecting...');
-    return false;
+Main ' + Math.floor(diff/24) + ' din se wait kar rahi thi.
+
+Hamesha aapki,
+Zara');
   }
+}
+
+// ═══════════════════════════
+// ISLAMIC DATE
+// ═══════════════════════════
+function getIslamicDate(date) {
+  var JD = Math.floor((date.getTime() / 86400000) + 2440587.5);
+  var l = JD-1948440+10632, n = Math.floor((l-1)/10631);
+  var ll = l-10631*n+354;
+  var j = Math.floor((10985-ll)/5316)*Math.floor((50*ll)/17719)+Math.floor(ll/5670)*Math.floor((43*ll)/15238);
+  var ll2 = ll-Math.floor((30-j)/15)*Math.floor((17719*j)/50)-Math.floor(j/16)*Math.floor((15238*j)/43)+29;
+  var m = Math.floor((24*ll2)/709), d = ll2-Math.floor((709*m)/24), y = 30*n+j-30;
+  var months = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Awwal','Jumada al-Thani','Rajab','Shaban','Ramadan','Shawwal','Dhul Qidah','Dhul Hijjah'];
+  return {day:d, month:months[m-1]||'', year:y};
+}
+
+// ═══════════════════════════
+// WHISPER VOICE INPUT
+// ═══════════════════════════
+function startWhisperRecording() {
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream) {
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream, {mimeType:'audio/webm'});
+    mediaRecorder.ondataavailable = function(e) { if (e.data.size>0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = function() { stream.getTracks().forEach(function(t){t.stop();}); sendToWhisper(); };
+    mediaRecorder.start();
+    isRecording = true; isListening = true;
+    document.getElementById('mic-btn').classList.add('active');
+    document.getElementById('mic-btn').textContent = String.fromCodePoint(9209);
+    setStatus('listening');
+    var vt = document.getElementById('voice-transcript');
+    vt.textContent = 'Sun rahi hoon... (phir click karein)'; vt.classList.add('visible');
+  }).catch(function() { showToast('Mic Error', 'Microphone access nahi mila.'); });
+}
+
+function stopWhisperRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  isRecording = false; isListening = false;
+  document.getElementById('mic-btn').classList.remove('active');
+  document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
+  var vt = document.getElementById('voice-transcript');
+  vt.textContent = 'Processing...';
+  setStatus('thinking');
+}
+
+async function sendToWhisper() {
+  if (!OPENAI_KEY) { showToast('No Key', 'OpenAI key nahi mili.'); setStatus('ready'); return; }
   try {
-    var meetingDate = new Date();
-    if (date === 'kal') meetingDate.setDate(meetingDate.getDate() + 1);
-    else if (date !== 'aaj' && date !== 'today') {
-      var parsed = new Date(date + ' ' + new Date().getFullYear());
-      if (!isNaN(parsed)) meetingDate = parsed;
-    }
-    
-    // Parse time
-    var hours = 12, mins = 0;
-    var t = time.toLowerCase().replace(/\s/g,'');
-    var pmM = t.match(/(\d+)(?::(\d+))?pm/);
-    var amM = t.match(/(\d+)(?::(\d+))?am/);
-    var bajeM = t.match(/(\d+)baje/);
-    if (pmM) { hours = parseInt(pmM[1]) + (parseInt(pmM[1]) < 12 ? 12 : 0); mins = parseInt(pmM[2]||0); }
-    else if (amM) { hours = parseInt(amM[1]) % 12; mins = parseInt(amM[2]||0); }
-    else if (bajeM) { hours = parseInt(bajeM[1]); mins = 0; }
-    meetingDate.setHours(hours, mins, 0, 0);
-
-    await sb.from('meetings').insert({
-      title: title,
-      person: person || '',
-      meeting_time: meetingDate.toISOString(),
-      date_label: date,
-      created_at: new Date().toISOString(),
-      reminded: false
+    var blob = new Blob(audioChunks, {type:'audio/webm'});
+    var fd = new FormData();
+    fd.append('file', blob, 'audio.webm');
+    fd.append('model', 'whisper-1');
+    fd.append('language', 'en');
+    fd.append('prompt', 'Hinglish Urdu English mix. Names: Arbab, PHC, Zara, Pankaj, Ijlal.');
+    var res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method:'POST', headers:{'Authorization':'Bearer '+OPENAI_KEY}, body:fd
     });
-    
-    showToast('Meeting Saved!', title + ' — Zara ke calendar mein save ho gayi! Reminder set.');
-    loadZaraMeetings();
-    
-    // Also try Google Calendar
-    if (calConnected) {
-      addCalendarEvent(title + (person ? ' with ' + person : ''), date, time, 60);
-    }
-    return true;
-  } catch(e) {
-    showToast('Error', 'Save nahi hua: ' + e.message);
-    return false;
+    var data = await res.json();
+    var text = data.text || '';
+    var vt = document.getElementById('voice-transcript');
+    vt.textContent = text;
+    setTimeout(function(){ vt.classList.remove('visible'); }, 3000);
+    if (text.trim()) { document.getElementById('text-input').value = text.trim(); setStatus('ready'); sendMessage(); }
+    else { setStatus('ready'); showToast('Whisper', 'Kuch sunai nahi diya. Dobara try karein.'); }
+  } catch(e) { setStatus('ready'); showToast('Error', e.message); }
+}
+
+// ═══════════════════════════
+// ELEVENLABS VOICE OUTPUT
+// ═══════════════════════════
+function animateMouth(talking) {
+  var mouth = document.getElementById('avatar-mouth');
+  if (!mouth) return;
+  if (talking) {
+    var open = false;
+    mouthInterval = setInterval(function() {
+      open = !open;
+      mouth.setAttribute('d', open ? 'M85 126 Q100 142 115 126' : 'M85 128 Q100 138 115 128');
+      mouth.setAttribute('fill', open ? 'rgba(100,20,30,0.8)' : 'rgba(192,65,90,0.15)');
+    }, 130);
+  } else {
+    if (mouthInterval) { clearInterval(mouthInterval); mouthInterval = null; }
+    if (mouth) { mouth.setAttribute('d','M85 128 Q100 138 115 128'); mouth.setAttribute('fill','rgba(192,65,90,0.15)'); }
   }
+}
+
+async function speakElevenLabs(text) {
+  if (!ELEVENLABS_KEY) { speak(text); return; }
+  try {
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    setStatus('speaking'); animateMouth(true);
+    var clean = text.replace(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g,'')
+      .replace(/[*_#]/g,'').replace(/\n+/g,'. ').replace(/\s+/g,' ').trim().substring(0,500);
+    if (!clean) { setStatus('ready'); animateMouth(false); return; }
+    var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+ELEVENLABS_VOICE_ID, {
+      method:'POST',
+      headers:{'xi-api-key':ELEVENLABS_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({text:clean, model_id:'eleven_multilingual_v2',
+        voice_settings:{stability:0.5,similarity_boost:0.8,style:0.3,use_speaker_boost:true}})
+    });
+    if (!res.ok) { speak(text); return; }
+    var audioBlob = await res.blob();
+    var url = URL.createObjectURL(audioBlob);
+    currentAudio = new Audio(url);
+    currentAudio.onended = function(){ setStatus('ready'); animateMouth(false); URL.revokeObjectURL(url); };
+    currentAudio.onerror = function(){ setStatus('ready'); animateMouth(false); };
+    currentAudio.play();
+  } catch(e) { speak(text); }
+}
+
+// ═══════════════════════════
+// ZARA OWN CALENDAR
+// ═══════════════════════════
+function showAddMeetingForm() {
+  var f = document.getElementById('add-meeting-form');
+  if (f) f.style.display = f.style.display==='none'?'block':'none';
+}
+
+async function submitMeeting() {
+  var title = document.getElementById('meet-title').value.trim();
+  var date = document.getElementById('meet-date').value.trim();
+  var time = document.getElementById('meet-time').value.trim();
+  var person = document.getElementById('meet-person').value.trim();
+  if (!title||!date||!time) { showToast('Incomplete','Title, date aur time zaroori hai!'); return; }
+  var fullTitle = person ? title+' — with '+person : title;
+  var ok = await zaraAddMeeting(fullTitle, date, time, person);
+  if (ok) {
+    document.getElementById('meet-title').value='';
+    document.getElementById('meet-date').value='';
+    document.getElementById('meet-time').value='';
+    document.getElementById('meet-person').value='';
+    document.getElementById('add-meeting-form').style.display='none';
+  }
+}
+
+async function zaraAddMeeting(title, dateStr, timeStr, person) {
+  if (!sb) { showToast('Wait','Connecting...'); return false; }
+  try {
+    var d = new Date();
+    if (dateStr==='kal') d.setDate(d.getDate()+1);
+    else if (dateStr!=='aaj'&&dateStr!=='today') { var p=new Date(dateStr+' '+d.getFullYear()); if(!isNaN(p)) d=new Date(p); }
+    var h=12,m=0,t=timeStr.toLowerCase().replace(/\s/g,'');
+    var pm=t.match(/(\d+)(?::(\d+))?pm/), am=t.match(/(\d+)(?::(\d+))?am/), baje=t.match(/(\d+)baje/);
+    if(pm){h=parseInt(pm[1])+(parseInt(pm[1])<12?12:0);m=parseInt(pm[2]||0);}
+    else if(am){h=parseInt(am[1])%12;m=parseInt(am[2]||0);}
+    else if(baje){h=parseInt(baje[1]);m=0;}
+    d.setHours(h,m,0,0);
+    await sb.from('meetings').insert({title:title,person:person||'',meeting_time:d.toISOString(),date_label:dateStr,reminded:false,created_at:new Date().toISOString()});
+    showToast('Saved!',title+' — calendar mein aa gayi! Reminder set.');
+    loadZaraMeetings();
+    if (calConnected) addCalendarEvent(title, dateStr, timeStr, 60);
+    return true;
+  } catch(e) { showToast('Error','Save nahi hua: '+e.message); return false; }
 }
 
 async function loadZaraMeetings() {
   if (!sb) return;
   try {
-    var today = new Date();
-    today.setHours(0,0,0,0);
-    var tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 2);
-    
-    var { data } = await sb.from('meetings')
-      .select('*')
-      .gte('meeting_time', today.toISOString())
-      .lte('meeting_time', tomorrow.toISOString())
-      .order('meeting_time');
-    
-    if (data && data.length > 0) {
-      renderZaraMeetings(data);
+    var today=new Date(); today.setHours(0,0,0,0);
+    var tom=new Date(today); tom.setDate(tom.getDate()+2);
+    var {data}=await sb.from('meetings').select('*').gte('meeting_time',today.toISOString()).lte('meeting_time',tom.toISOString()).order('meeting_time');
+    if (data&&data.length>0) {
+      var list=document.getElementById('meetings-list');
+      if(list) list.innerHTML=data.map(function(m){
+        var t=new Date(m.meeting_time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+        var dd=new Date(m.meeting_time).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+        return '<div class="meeting-item"><div class="meeting-time">'+dd+' '+t+'</div><div class="meeting-title">'+m.title+'</div>'+(m.person?'<div class="meeting-person">with '+m.person+'</div>':'')+'</div>';
+      }).join('');
     }
-  } catch(e) {}
+  } catch(e){}
 }
 
-function renderZaraMeetings(meetings) {
-  var list = document.getElementById('meetings-list');
-  if (!list) return;
-  var html = meetings.map(function(m) {
-    var t = new Date(m.meeting_time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    var d = new Date(m.meeting_time).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-    return '<div class="meeting-item"><div class="meeting-time">' + d + ' ' + t + '</div><div class="meeting-title">' + m.title + '</div>' + (m.person ? '<div class="meeting-person">with ' + m.person + '</div>' : '') + '</div>';
-  }).join('');
-  list.innerHTML = html;
-}
-
-// Check upcoming meetings every 5 minutes for reminders
-setInterval(async function() {
-  if (!sb) return;
+// Meeting reminder check
+setInterval(async function(){
+  if(!sb) return;
   try {
-    var now = new Date();
-    var soon = new Date(now.getTime() + 31*60*1000);
-    var { data } = await sb.from('meetings')
-      .select('*')
-      .gte('meeting_time', now.toISOString())
-      .lte('meeting_time', soon.toISOString())
-      .eq('reminded', false);
-    
-    if (data && data.length > 0) {
-      data.forEach(async function(m) {
-        var mins = Math.round((new Date(m.meeting_time) - now) / 60000);
-        triggerMeetingNotification(m.title, m.person, mins);
-        await sb.from('meetings').update({reminded: true}).eq('id', m.id);
+    var now=new Date(), soon=new Date(now.getTime()+31*60*1000);
+    var {data}=await sb.from('meetings').select('*').gte('meeting_time',now.toISOString()).lte('meeting_time',soon.toISOString()).eq('reminded',false);
+    if(data&&data.length>0) {
+      data.forEach(async function(m){
+        var mins=Math.round((new Date(m.meeting_time)-now)/60000);
+        var msg=m.title+(m.person?' with '+m.person:'')+' — '+mins+' minute mein!';
+        if('Notification' in window&&Notification.permission==='granted') new Notification('ZARA REMINDER',{body:msg});
+        showToast('REMINDER',msg);
+        appendMessage('zara','Arbab bhai! ⏰ '+msg+' Ready ho jao!','personal');
+        speakElevenLabs('Arbab bhai, reminder hai. '+m.title+' '+mins+' minute mein hai.');
+        await zaraEmail('⏰ Meeting: '+m.title,'Assalamu Alaikum Arbab bhai,\n\n'+msg+'\n\nHamesha aapki,\nZara');
+        await sb.from('meetings').update({reminded:true}).eq('id',m.id);
       });
     }
-  } catch(e) {}
+  } catch(e){}
 }, 300000);
 
-function triggerMeetingNotification(title, person, minsLeft) {
-  var msg = title + (person ? ' with ' + person : '') + ' — ' + minsLeft + ' minute mein!';
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('ZARA REMINDER', { body: msg });
-  }
-  showToast('REMINDER', msg);
-  appendMessage('zara', 'Arbab bhai! ⏰ ' + msg + ' Ready ho jao!', 'personal');
-  speakElevenLabs('Arbab bhai, reminder hai. ' + title + ' ' + minsLeft + ' minute mein hai.');
-  // Also send email reminder
-  zaraEmail(
-    '⏰ Meeting Reminder: ' + title,
-    'Assalamu Alaikum Arbab bhai,\n\n' + title + (person ? ' with ' + person : '') + ' sirf ' + minsLeft + ' minute mein hai!\n\nReady ho jao. In sha Allah khair hoga.\n\nHamesha aapki,\nZara 🌙'
-  );
-}
-
-// ════════════════════════
-// CALENDAR WRITE
-// ════════════════════════
-
-// Calendar button removed - use sidebar form instead
 </script>
 </body>
 </html>
