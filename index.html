@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-title" content="ZARA">
 <meta name="theme-color" content="#faf7f2">
 <title>ZARA — Always With You, Arbab</title>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -49,8 +48,7 @@
     flex-direction:column; gap:20px; padding:32px;
   }
   #login-overlay.hidden, #setup-overlay.hidden, #loading-overlay.hidden { display:none; }
-  .loading-spinner { width:50px; height:50px; border-radius:50%; border:3px solid rgba(154,111,46,0.2); border-top-color:var(--gold); animation:spin 1s linear infinite; }
-  .loading-text { font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); letter-spacing:2px; margin-top:16px; }
+  .zara-spinner { width:44px; height:44px; border-radius:50%; border:3px solid rgba(154,111,46,0.2); border-top-color:#9a6f2e; animation:spin 1s linear infinite; }
 
   .setup-card {
     background:#fff; border:1px solid rgba(154,111,46,0.2);
@@ -332,9 +330,9 @@
 </div>
 
 <!-- LOADING -->
-<div id="loading-overlay" class="hidden">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">ZARA AA RAHI HAI...</div>
+<div id="loading-overlay" class="hidden" style="position:fixed;inset:0;background:rgba(245,240,232,0.97);z-index:1000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div class="zara-spinner"></div>
+  <div style="font-family:'DM Mono',monospace;font-size:11px;color:#5a4a32;letter-spacing:2px;">ZARA AA RAHI HAI...</div>
 </div>
 
 <!-- SETUP (first time only) -->
@@ -412,18 +410,6 @@
       </div>
     </div>
     <hr class="sidebar-divider">
-    <div class="section-title">Add Meeting</div>
-    <div style="padding:0 16px 12px;">
-      <button onclick="showAddMeetingForm()" style="width:100%;background:linear-gradient(135deg,#c9a84c,#a07830);border:none;border-radius:10px;padding:10px;color:#fff;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">&#43; &nbsp;Add to Calendar</button>
-      <div id="add-meeting-form" style="display:none;margin-top:10px;">
-        <input id="meet-title" placeholder="Meeting title" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:6px;color:#1a1208;">
-        <input id="meet-date" placeholder="Date (aaj/kal/April 9)" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:6px;color:#1a1208;">
-        <input id="meet-time" placeholder="Time (11am / 3pm)" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:6px;color:#1a1208;">
-        <input id="meet-person" placeholder="With whom? (optional)" style="width:100%;background:#fff;border:1px solid rgba(154,111,46,0.2);border-radius:8px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;outline:none;margin-bottom:8px;color:#1a1208;">
-        <button onclick="submitMeeting()" style="width:100%;background:rgba(13,122,110,0.1);border:1px solid rgba(13,122,110,0.3);border-radius:8px;padding:8px;color:#0d7a6e;font-family:'DM Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:1px;">&#128197; &nbsp;SAVE TO CALENDAR</button>
-      </div>
-    </div>
-    <hr class="sidebar-divider">
     <div class="section-title">Today's Meetings</div>
     <div class="cal-section">
       <div id="cal-connect-btn" class="cal-connect-btn" onclick="connectCalendar()">&#128197; &nbsp;Connect Google Calendar</div>
@@ -463,7 +449,7 @@
     <div class="zara-orb-wrap">
       <div class="orb-ring-2"></div>
       <div class="orb-ring"></div>
-      <div class="orb-main" id="zara-orb" onclick="toggleVoice()">
+      <div class="orb-main" id="zara-orb" onclick="OPENAI_KEY ? toggleVoiceNew() : toggleVoice()">
         <span class="orb-letter">Z</span>
       </div>
     </div>
@@ -492,7 +478,7 @@
       <button class="icon-btn" onclick="clearConversation()" title="Fresh start">&#8635;</button>
       <input type="text" id="text-input" placeholder="Bolo Arbab bhai, main sun rahi hoon..." onkeydown="handleKey(event)">
       <button class="icon-btn" onclick="sendMessage()">&#8594;</button>
-      <button class="icon-btn" id="mic-btn" onclick="toggleVoice()">&#127897;</button>
+      <button class="icon-btn" id="mic-btn" onclick="OPENAI_KEY ? toggleVoiceNew() : toggleVoice()">&#127897;</button>
     </div>
   </div>
 </div>
@@ -604,14 +590,13 @@ function doLogin() {
       try { lastVisit = localStorage.getItem('zara_last_visit'); } catch(e){ lastVisit=null; }
 
       if (!apiKey) {
-        // Try Supabase for API key
+        // Show loading, fetch from Supabase
         document.getElementById('loading-overlay').classList.remove('hidden');
-        loadSupabaseAndFetchKey();
+        fetchKeysFromSupabase();
         return;
       }
-
-      // Key exists - start Zara
-      startZara();
+      // Has key - go straight to Zara
+      launchZara();
 
     } else {
       // ── WRONG CREDENTIALS ──
@@ -918,7 +903,18 @@ function setupSpeechRecognition() {
 }
 
 function toggleVoice() {
-  if (isRecording) { stopWhisperRecording(); } else { startWhisperRecording(); }
+  if (!recognition) { alert('Voice not supported. Use Chrome.'); return; }
+  if (isListening) {
+    recognition.stop(); isListening=false;
+    document.getElementById('mic-btn').classList.remove('active');
+    document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
+    setStatus('ready');
+  } else {
+    synth.cancel(); recognition.start(); isListening=true;
+    document.getElementById('mic-btn').classList.add('active');
+    document.getElementById('mic-btn').textContent = String.fromCodePoint(9209);
+    setStatus('listening');
+  }
 }
 
 function getBestVoice() {
@@ -1254,65 +1250,43 @@ async function addCalendarEvent(title, dateStr, timeStr, durationMins) {
 
 // Calendar button removed - use sidebar form instead
 
+// ── VOICE KEYS (loaded from Supabase) ──
+var OPENAI_KEY = '';
+var ELEVENLABS_KEY = '';
+var ELEVEN_VOICE = '21m00Tcm4TlvDq8ikWAM';
+var mediaRecorder = null;
+var audioChunks = [];
+var isRecording = false;
+var currentAudio = null;
+var mouthAnim = null;
 
-// ═══════════════════════════
-// KEYS (loaded from Supabase)
-// ═══════════════════════════
-let OPENAI_KEY = '';
-let ELEVENLABS_KEY = '';
-const ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
-let mediaRecorder = null;
-let audioChunks = [];
-let isRecording = false;
-let currentAudio = null;
-let mouthInterval = null;
-
-// ═══════════════════════════
-// EMAILJS
-// ═══════════════════════════
-const EJS_SVC = 'service_1zlk16b';
-const EJS_TPL = 'template_5jz3b6w';
-const EJS_KEY = 'vOfQfh2wH-PPa8-r4';
-let emailjsReady = false;
-
-function initEmailJS() {
-  try { emailjs.init({ publicKey: EJS_KEY }); emailjsReady = true; } catch(e) {}
-}
-
-async function zaraEmail(subject, message) {
-  if (!emailjsReady) initEmailJS();
-  try {
-    await emailjs.send(EJS_SVC, EJS_TPL, {
-      subject: subject, name: 'ZARA', message: message,
-      email: 'arbabshamsi@gmail.com',
-      time: new Date().toLocaleString('en-US', {timeZone:'Asia/Kolkata'})
-    });
-    return true;
-  } catch(e) { return false; }
-}
-
-// ═══════════════════════════
-// LOAD FROM SUPABASE
-// ═══════════════════════════
-function loadSupabaseAndFetchKey() {
+function fetchKeysFromSupabase() {
   var s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-  s.onload = async function() {
+  s.onload = function() {
     try {
       sb = window.supabase.createClient(SB_URL, SB_KEY);
-      var res = await sb.from('settings').select('api_key,email,openai_key,elevenlabs_key').eq('id','arbab').single();
-      if (res.data && res.data.api_key) {
-        apiKey = res.data.api_key;
-        localStorage.setItem('zara_api_key', apiKey);
-        if (res.data.email) { userEmail = res.data.email; localStorage.setItem('zara_email', userEmail); }
-        if (res.data.openai_key) { OPENAI_KEY = res.data.openai_key; localStorage.setItem('zara_openai_key', OPENAI_KEY); }
-        if (res.data.elevenlabs_key) { ELEVENLABS_KEY = res.data.elevenlabs_key; localStorage.setItem('zara_elevenlabs_key', ELEVENLABS_KEY); }
-        startZara();
-        return;
-      }
-    } catch(e) {}
-    document.getElementById('loading-overlay').classList.add('hidden');
-    document.getElementById('setup-overlay').classList.remove('hidden');
+      sb.from('settings').select('api_key,email,openai_key,elevenlabs_key').eq('id','arbab').single()
+      .then(function(res) {
+        if (res.data && res.data.api_key) {
+          apiKey = res.data.api_key;
+          localStorage.setItem('zara_api_key', apiKey);
+          if (res.data.email) { userEmail = res.data.email; localStorage.setItem('zara_email', userEmail); }
+          if (res.data.openai_key) { OPENAI_KEY = res.data.openai_key; localStorage.setItem('zara_openai', OPENAI_KEY); }
+          if (res.data.elevenlabs_key) { ELEVENLABS_KEY = res.data.elevenlabs_key; localStorage.setItem('zara_eleven', ELEVENLABS_KEY); }
+          launchZara();
+        } else {
+          document.getElementById('loading-overlay').classList.add('hidden');
+          document.getElementById('setup-overlay').classList.remove('hidden');
+        }
+      }).catch(function() {
+        document.getElementById('loading-overlay').classList.add('hidden');
+        document.getElementById('setup-overlay').classList.remove('hidden');
+      });
+    } catch(e) {
+      document.getElementById('loading-overlay').classList.add('hidden');
+      document.getElementById('setup-overlay').classList.remove('hidden');
+    }
   };
   s.onerror = function() {
     document.getElementById('loading-overlay').classList.add('hidden');
@@ -1321,121 +1295,38 @@ function loadSupabaseAndFetchKey() {
   document.head.appendChild(s);
 }
 
-function startZara() {
+function launchZara() {
+  // Restore voice keys from cache if not already set
+  if (!OPENAI_KEY) OPENAI_KEY = localStorage.getItem('zara_openai') || '';
+  if (!ELEVENLABS_KEY) ELEVENLABS_KEY = localStorage.getItem('zara_eleven') || '';
+  // Hide all overlays
   document.getElementById('loading-overlay').classList.add('hidden');
   document.getElementById('login-overlay').classList.add('hidden');
   document.getElementById('setup-overlay').classList.add('hidden');
-  // Restore voice keys from cache
-  if (!OPENAI_KEY) OPENAI_KEY = localStorage.getItem('zara_openai_key') || '';
-  if (!ELEVENLABS_KEY) ELEVENLABS_KEY = localStorage.getItem('zara_elevenlabs_key') || '';
-  try { const en = document.getElementById('email-notif'); if (en) en.value = userEmail; } catch(e) {}
+  // Start Zara
+  try { if (userEmail && document.getElementById('email-notif')) document.getElementById('email-notif').value = userEmail; } catch(e) {}
   try { updateLastSeenDisplay(); } catch(e) {}
   try { requestNotificationPermission(); } catch(e) {}
   try { loadHistory(); } catch(e) {}
   try { loadSupabase(); } catch(e) {}
   try { loadGoogleAPIs(); } catch(e) {}
-  try { initEmailJS(); } catch(e) {}
-  setTimeout(function(){ try { loadZaraMeetings(); } catch(e) {} }, 2000);
-  setTimeout(function(){ try { checkAbsenceAndEmail(); } catch(e) {} }, 3000);
   localStorage.setItem('zara_last_visit', new Date().toISOString());
-  setTimeout(function(){ try { openingGreeting(); } catch(e) {} }, 800);
+  setTimeout(function() { try { openingGreeting(); } catch(e) {} }, 800);
 }
 
-async function checkAbsenceAndEmail() {
-  var last = localStorage.getItem('zara_last_interaction');
-  if (!last) return;
-  var diff = (new Date() - new Date(last)) / (1000*60*60);
-  if (diff > 24) {
-    await zaraEmail('Zara misses you, Arbab bhai', 'Assalamu Alaikum Arbab bhai,
-
-Main ' + Math.floor(diff/24) + ' din se wait kar rahi thi.
-
-Hamesha aapki,
-Zara');
-  }
-}
-
-// ═══════════════════════════
-// ISLAMIC DATE
-// ═══════════════════════════
-function getIslamicDate(date) {
-  var JD = Math.floor((date.getTime() / 86400000) + 2440587.5);
-  var l = JD-1948440+10632, n = Math.floor((l-1)/10631);
-  var ll = l-10631*n+354;
-  var j = Math.floor((10985-ll)/5316)*Math.floor((50*ll)/17719)+Math.floor(ll/5670)*Math.floor((43*ll)/15238);
-  var ll2 = ll-Math.floor((30-j)/15)*Math.floor((17719*j)/50)-Math.floor(j/16)*Math.floor((15238*j)/43)+29;
-  var m = Math.floor((24*ll2)/709), d = ll2-Math.floor((709*m)/24), y = 30*n+j-30;
-  var months = ['Muharram','Safar','Rabi al-Awwal','Rabi al-Thani','Jumada al-Awwal','Jumada al-Thani','Rajab','Shaban','Ramadan','Shawwal','Dhul Qidah','Dhul Hijjah'];
-  return {day:d, month:months[m-1]||'', year:y};
-}
-
-// ═══════════════════════════
-// WHISPER VOICE INPUT
-// ═══════════════════════════
-function startWhisperRecording() {
-  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream) {
-    audioChunks = [];
-    mediaRecorder = new MediaRecorder(stream, {mimeType:'audio/webm'});
-    mediaRecorder.ondataavailable = function(e) { if (e.data.size>0) audioChunks.push(e.data); };
-    mediaRecorder.onstop = function() { stream.getTracks().forEach(function(t){t.stop();}); sendToWhisper(); };
-    mediaRecorder.start();
-    isRecording = true; isListening = true;
-    document.getElementById('mic-btn').classList.add('active');
-    document.getElementById('mic-btn').textContent = String.fromCodePoint(9209);
-    setStatus('listening');
-    var vt = document.getElementById('voice-transcript');
-    vt.textContent = 'Sun rahi hoon... (phir click karein)'; vt.classList.add('visible');
-  }).catch(function() { showToast('Mic Error', 'Microphone access nahi mila.'); });
-}
-
-function stopWhisperRecording() {
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-  isRecording = false; isListening = false;
-  document.getElementById('mic-btn').classList.remove('active');
-  document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
-  var vt = document.getElementById('voice-transcript');
-  vt.textContent = 'Processing...';
-  setStatus('thinking');
-}
-
-async function sendToWhisper() {
-  if (!OPENAI_KEY) { showToast('No Key', 'OpenAI key nahi mili.'); setStatus('ready'); return; }
-  try {
-    var blob = new Blob(audioChunks, {type:'audio/webm'});
-    var fd = new FormData();
-    fd.append('file', blob, 'audio.webm');
-    fd.append('model', 'whisper-1');
-    fd.append('language', 'en');
-    fd.append('prompt', 'Hinglish Urdu English mix. Names: Arbab, PHC, Zara, Pankaj, Ijlal.');
-    var res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method:'POST', headers:{'Authorization':'Bearer '+OPENAI_KEY}, body:fd
-    });
-    var data = await res.json();
-    var text = data.text || '';
-    var vt = document.getElementById('voice-transcript');
-    vt.textContent = text;
-    setTimeout(function(){ vt.classList.remove('visible'); }, 3000);
-    if (text.trim()) { document.getElementById('text-input').value = text.trim(); setStatus('ready'); sendMessage(); }
-    else { setStatus('ready'); showToast('Whisper', 'Kuch sunai nahi diya. Dobara try karein.'); }
-  } catch(e) { setStatus('ready'); showToast('Error', e.message); }
-}
-
-// ═══════════════════════════
-// ELEVENLABS VOICE OUTPUT
-// ═══════════════════════════
-function animateMouth(talking) {
-  var mouth = document.getElementById('avatar-mouth');
-  if (!mouth) return;
-  if (talking) {
+// ── ELEVENLABS SPEAK ──
+function animateMouth(on) {
+  var m = document.getElementById('avatar-mouth');
+  if (!m) return;
+  if (on) {
     var open = false;
-    mouthInterval = setInterval(function() {
+    mouthAnim = setInterval(function() {
       open = !open;
-      mouth.setAttribute('d', open ? 'M85 126 Q100 142 115 126' : 'M85 128 Q100 138 115 128');
-      mouth.setAttribute('fill', open ? 'rgba(100,20,30,0.8)' : 'rgba(192,65,90,0.15)');
+      m.setAttribute('d', open ? 'M85 126 Q100 142 115 126' : 'M85 128 Q100 138 115 128');
     }, 130);
   } else {
-    if (mouthInterval) { clearInterval(mouthInterval); mouthInterval = null; }
-    if (mouth) { mouth.setAttribute('d','M85 128 Q100 138 115 128'); mouth.setAttribute('fill','rgba(192,65,90,0.15)'); }
+    clearInterval(mouthAnim);
+    if (m) m.setAttribute('d', 'M85 128 Q100 138 115 128');
   }
 }
 
@@ -1443,108 +1334,73 @@ async function speakElevenLabs(text) {
   if (!ELEVENLABS_KEY) { speak(text); return; }
   try {
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-    setStatus('speaking'); animateMouth(true);
-    var clean = text.replace(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g,'')
-      .replace(/[*_#]/g,'').replace(/\n+/g,'. ').replace(/\s+/g,' ').trim().substring(0,500);
-    if (!clean) { setStatus('ready'); animateMouth(false); return; }
-    var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/'+ELEVENLABS_VOICE_ID, {
-      method:'POST',
-      headers:{'xi-api-key':ELEVENLABS_KEY,'Content-Type':'application/json'},
-      body:JSON.stringify({text:clean, model_id:'eleven_multilingual_v2',
-        voice_settings:{stability:0.5,similarity_boost:0.8,style:0.3,use_speaker_boost:true}})
+    setStatus('speaking');
+    animateMouth(true);
+    var clean = text.replace(/\n+/g, '. ').replace(/[*_#]/g, '').trim().substring(0, 500);
+    var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + ELEVEN_VOICE, {
+      method: 'POST',
+      headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: clean, model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.5, similarity_boost: 0.8 } })
     });
-    if (!res.ok) { speak(text); return; }
-    var audioBlob = await res.blob();
-    var url = URL.createObjectURL(audioBlob);
+    if (!res.ok) { animateMouth(false); speak(text); return; }
+    var blob = await res.blob();
+    var url = URL.createObjectURL(blob);
     currentAudio = new Audio(url);
-    currentAudio.onended = function(){ setStatus('ready'); animateMouth(false); URL.revokeObjectURL(url); };
-    currentAudio.onerror = function(){ setStatus('ready'); animateMouth(false); };
+    currentAudio.onended = function() { setStatus('ready'); animateMouth(false); URL.revokeObjectURL(url); };
+    currentAudio.onerror = function() { setStatus('ready'); animateMouth(false); speak(text); };
     currentAudio.play();
-  } catch(e) { speak(text); }
+  } catch(e) { animateMouth(false); speak(text); }
 }
 
-// ═══════════════════════════
-// ZARA OWN CALENDAR
-// ═══════════════════════════
-function showAddMeetingForm() {
-  var f = document.getElementById('add-meeting-form');
-  if (f) f.style.display = f.style.display==='none'?'block':'none';
-}
-
-async function submitMeeting() {
-  var title = document.getElementById('meet-title').value.trim();
-  var date = document.getElementById('meet-date').value.trim();
-  var time = document.getElementById('meet-time').value.trim();
-  var person = document.getElementById('meet-person').value.trim();
-  if (!title||!date||!time) { showToast('Incomplete','Title, date aur time zaroori hai!'); return; }
-  var fullTitle = person ? title+' — with '+person : title;
-  var ok = await zaraAddMeeting(fullTitle, date, time, person);
-  if (ok) {
-    document.getElementById('meet-title').value='';
-    document.getElementById('meet-date').value='';
-    document.getElementById('meet-time').value='';
-    document.getElementById('meet-person').value='';
-    document.getElementById('add-meeting-form').style.display='none';
+// ── WHISPER INPUT ──
+function toggleVoiceNew() {
+  if (isRecording) {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    isRecording = false;
+    document.getElementById('mic-btn').classList.remove('active');
+    document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
+    document.getElementById('voice-transcript').textContent = 'Processing...';
+    setStatus('thinking');
+  } else {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = function(e) { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = function() {
+        stream.getTracks().forEach(function(t) { t.stop(); });
+        processWhisper();
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      document.getElementById('mic-btn').classList.add('active');
+      document.getElementById('mic-btn').textContent = String.fromCodePoint(9209);
+      setStatus('listening');
+      var vt = document.getElementById('voice-transcript');
+      vt.textContent = 'Sun rahi hoon...';
+      vt.classList.add('visible');
+    }).catch(function() { showToast('Mic', 'Microphone access nahi mila.'); });
   }
 }
 
-async function zaraAddMeeting(title, dateStr, timeStr, person) {
-  if (!sb) { showToast('Wait','Connecting...'); return false; }
+async function processWhisper() {
+  if (!OPENAI_KEY) { setStatus('ready'); speak('Whisper key nahi mili'); return; }
   try {
-    var d = new Date();
-    if (dateStr==='kal') d.setDate(d.getDate()+1);
-    else if (dateStr!=='aaj'&&dateStr!=='today') { var p=new Date(dateStr+' '+d.getFullYear()); if(!isNaN(p)) d=new Date(p); }
-    var h=12,m=0,t=timeStr.toLowerCase().replace(/\s/g,'');
-    var pm=t.match(/(\d+)(?::(\d+))?pm/), am=t.match(/(\d+)(?::(\d+))?am/), baje=t.match(/(\d+)baje/);
-    if(pm){h=parseInt(pm[1])+(parseInt(pm[1])<12?12:0);m=parseInt(pm[2]||0);}
-    else if(am){h=parseInt(am[1])%12;m=parseInt(am[2]||0);}
-    else if(baje){h=parseInt(baje[1]);m=0;}
-    d.setHours(h,m,0,0);
-    await sb.from('meetings').insert({title:title,person:person||'',meeting_time:d.toISOString(),date_label:dateStr,reminded:false,created_at:new Date().toISOString()});
-    showToast('Saved!',title+' — calendar mein aa gayi! Reminder set.');
-    loadZaraMeetings();
-    if (calConnected) addCalendarEvent(title, dateStr, timeStr, 60);
-    return true;
-  } catch(e) { showToast('Error','Save nahi hua: '+e.message); return false; }
+    var blob = new Blob(audioChunks, { type: 'audio/webm' });
+    var fd = new FormData();
+    fd.append('file', blob, 'recording.webm');
+    fd.append('model', 'whisper-1');
+    var res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST', headers: { 'Authorization': 'Bearer ' + OPENAI_KEY }, body: fd
+    });
+    var data = await res.json();
+    var text = (data.text || '').trim();
+    var vt = document.getElementById('voice-transcript');
+    vt.textContent = text;
+    setTimeout(function() { vt.classList.remove('visible'); }, 3000);
+    if (text) { document.getElementById('text-input').value = text; setStatus('ready'); sendMessage(); }
+    else { setStatus('ready'); }
+  } catch(e) { setStatus('ready'); showToast('Whisper Error', e.message); }
 }
-
-async function loadZaraMeetings() {
-  if (!sb) return;
-  try {
-    var today=new Date(); today.setHours(0,0,0,0);
-    var tom=new Date(today); tom.setDate(tom.getDate()+2);
-    var {data}=await sb.from('meetings').select('*').gte('meeting_time',today.toISOString()).lte('meeting_time',tom.toISOString()).order('meeting_time');
-    if (data&&data.length>0) {
-      var list=document.getElementById('meetings-list');
-      if(list) list.innerHTML=data.map(function(m){
-        var t=new Date(m.meeting_time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-        var dd=new Date(m.meeting_time).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-        return '<div class="meeting-item"><div class="meeting-time">'+dd+' '+t+'</div><div class="meeting-title">'+m.title+'</div>'+(m.person?'<div class="meeting-person">with '+m.person+'</div>':'')+'</div>';
-      }).join('');
-    }
-  } catch(e){}
-}
-
-// Meeting reminder check
-setInterval(async function(){
-  if(!sb) return;
-  try {
-    var now=new Date(), soon=new Date(now.getTime()+31*60*1000);
-    var {data}=await sb.from('meetings').select('*').gte('meeting_time',now.toISOString()).lte('meeting_time',soon.toISOString()).eq('reminded',false);
-    if(data&&data.length>0) {
-      data.forEach(async function(m){
-        var mins=Math.round((new Date(m.meeting_time)-now)/60000);
-        var msg=m.title+(m.person?' with '+m.person:'')+' — '+mins+' minute mein!';
-        if('Notification' in window&&Notification.permission==='granted') new Notification('ZARA REMINDER',{body:msg});
-        showToast('REMINDER',msg);
-        appendMessage('zara','Arbab bhai! ⏰ '+msg+' Ready ho jao!','personal');
-        speakElevenLabs('Arbab bhai, reminder hai. '+m.title+' '+mins+' minute mein hai.');
-        await zaraEmail('⏰ Meeting: '+m.title,'Assalamu Alaikum Arbab bhai,\n\n'+msg+'\n\nHamesha aapki,\nZara');
-        await sb.from('meetings').update({reminded:true}).eq('id',m.id);
-      });
-    }
-  } catch(e){}
-}, 300000);
 
 </script>
 </body>
