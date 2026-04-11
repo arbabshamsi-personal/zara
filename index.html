@@ -488,74 +488,149 @@
       <div class="avatar-ring-2"></div>
       <div class="avatar-ring"></div>
       <svg class="avatar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="skinGrad" cx="45%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#f5d5a8"/>
+            <stop offset="40%" stop-color="#e8b87a"/>
+            <stop offset="100%" stop-color="#d4935a"/>
+          </radialGradient>
+          <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#faf0e6"/>
+            <stop offset="100%" stop-color="#e8d5c0"/>
+          </radialGradient>
+          <radialGradient id="hijabGrad" cx="50%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#1a4a3a"/>
+            <stop offset="60%" stop-color="#0d2e22"/>
+            <stop offset="100%" stop-color="#081a14"/>
+          </radialGradient>
+          <radialGradient id="hijabSheen" cx="30%" cy="20%" r="50%">
+            <stop offset="0%" stop-color="rgba(201,168,76,0.3)"/>
+            <stop offset="100%" stop-color="rgba(201,168,76,0)"/>
+          </radialGradient>
+          <filter id="softBlur">
+            <feGaussianBlur stdDeviation="0.8"/>
+          </filter>
+          <filter id="shadow">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.2)"/>
+          </filter>
+          <clipPath id="faceClip">
+            <ellipse cx="100" cy="108" rx="50" ry="58"/>
+          </clipPath>
+        </defs>
+
         <!-- Background -->
-        <circle cx="100" cy="100" r="100" fill="#f5e6d3"/>
-        
-        <!-- Hijab - back layer -->
-        <ellipse cx="100" cy="85" rx="72" ry="78" fill="#2c4a3e"/>
-        
+        <circle cx="100" cy="100" r="100" fill="url(#bgGrad)"/>
+
+        <!-- Hijab back volume -->
+        <ellipse cx="100" cy="75" rx="75" ry="80" fill="url(#hijabGrad)"/>
+
+        <!-- Shoulder/chest area -->
+        <path d="M0 165 Q25 145 60 140 Q80 137 100 136 Q120 137 140 140 Q175 145 200 165 L200 200 L0 200Z" fill="url(#hijabGrad)"/>
+
         <!-- Neck -->
-        <rect x="85" y="148" width="30" height="25" rx="8" fill="#e8c99a"/>
-        
-        <!-- Face -->
-        <ellipse cx="100" cy="105" rx="48" ry="55" fill="#e8c99a"/>
-        
-        <!-- Hijab - front drape -->
-        <path d="M28 108 Q30 160 100 175 Q170 160 172 108 Q160 125 130 132 Q115 136 100 136 Q85 136 70 132 Q40 125 28 108Z" fill="#2c4a3e"/>
-        
-        <!-- Hijab top -->
-        <path d="M35 85 Q35 40 100 35 Q165 40 165 85 Q155 68 130 62 Q115 58 100 58 Q85 58 70 62 Q45 68 35 85Z" fill="#1a3028"/>
-        
-        <!-- Hijab side folds -->
-        <path d="M35 85 Q28 108 28 108 Q38 95 52 90 Q60 87 70 86" fill="#1a3028" opacity="0.6"/>
-        <path d="M165 85 Q172 108 172 108 Q162 95 148 90 Q140 87 130 86" fill="#1a3028" opacity="0.6"/>
-        
-        <!-- Gold hijab accent -->
-        <path d="M52 78 Q100 68 148 78" stroke="#c9a84c" stroke-width="1.5" fill="none" opacity="0.6"/>
-        
-        <!-- Eyebrows -->
-        <path d="M68 88 Q78 84 88 86" stroke="#3d2010" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <path d="M112 86 Q122 84 132 88" stroke="#3d2010" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        
-        <!-- Eyes whites -->
-        <ellipse cx="78" cy="98" rx="11" ry="9" fill="white"/>
-        <ellipse cx="122" cy="98" rx="11" ry="9" fill="white"/>
-        
-        <!-- Iris -->
-        <circle cx="78" cy="98" r="7" fill="#3d2010"/>
-        <circle cx="122" cy="98" r="7" fill="#3d2010"/>
-        
+        <path d="M84 150 Q84 168 100 170 Q116 168 116 150 L112 148 Q100 152 88 148Z" fill="url(#skinGrad)"/>
+
+        <!-- Face base - soft realistic shape -->
+        <ellipse cx="100" cy="108" rx="50" ry="58" fill="url(#skinGrad)" filter="url(#shadow)"/>
+
+        <!-- Face highlight - forehead -->
+        <ellipse cx="92" cy="82" rx="22" ry="14" fill="rgba(255,240,220,0.4)" filter="url(#softBlur)"/>
+
+        <!-- Hijab front wrap - frames face beautifully -->
+        <path d="M50 78 Q48 95 50 115 Q52 135 60 148 Q70 158 85 162 Q92 164 100 164 Q108 164 115 162 Q130 158 140 148 Q148 135 150 115 Q152 95 150 78 Q148 65 140 58 Q120 48 100 46 Q80 48 60 58 Q52 65 50 78Z" fill="none" stroke="url(#hijabGrad)" stroke-width="28" stroke-linejoin="round"/>
+
+        <!-- Hijab sheen/highlight -->
+        <path d="M55 72 Q100 52 145 72" stroke="rgba(201,168,76,0.25)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="75" cy="65" rx="18" ry="8" fill="url(#hijabSheen)" filter="url(#softBlur)"/>
+
+        <!-- Hijab fold lines for realism -->
+        <path d="M52 95 Q55 110 58 125" stroke="rgba(255,255,255,0.06)" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M148 95 Q145 110 142 125" stroke="rgba(255,255,255,0.06)" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+        <!-- Eyebrows - well-shaped -->
+        <path d="M67 87 Q74 82 85 83 Q89 83 91 85" stroke="#2d1505" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+        <path d="M109 85 Q111 83 115 83 Q126 82 133 87" stroke="#2d1505" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+
+        <!-- Eye shadow -->
+        <ellipse cx="79" cy="97" rx="13" ry="6" fill="rgba(100,50,20,0.12)" filter="url(#softBlur)"/>
+        <ellipse cx="121" cy="97" rx="13" ry="6" fill="rgba(100,50,20,0.12)" filter="url(#softBlur)"/>
+
+        <!-- Eye whites -->
+        <ellipse cx="79" cy="97" rx="12" ry="8" fill="white"/>
+        <ellipse cx="121" cy="97" rx="12" ry="8" fill="white"/>
+
+        <!-- Iris - dark brown beautiful -->
+        <circle cx="79" cy="97" r="7.5" fill="#3d1f08"/>
+        <circle cx="121" cy="97" r="7.5" fill="#3d1f08"/>
+
+        <!-- Iris detail -->
+        <circle cx="79" cy="97" r="6" fill="#5c3010"/>
+        <circle cx="121" cy="97" r="6" fill="#5c3010"/>
+
         <!-- Pupil -->
-        <circle cx="79" cy="98" r="4" fill="#1a0a05"/>
-        <circle cx="123" cy="98" r="4" fill="#1a0a05"/>
-        
-        <!-- Eye shine -->
-        <circle cx="82" cy="95" r="2" fill="white" opacity="0.9"/>
-        <circle cx="126" cy="95" r="2" fill="white" opacity="0.9"/>
-        
-        <!-- Eyelashes top -->
-        <path d="M67 92 Q70 88 73 91" stroke="#1a0a05" stroke-width="1" fill="none"/>
-        <path d="M85 90 Q89 87 91 90" stroke="#1a0a05" stroke-width="1" fill="none"/>
-        <path d="M111 90 Q115 87 117 90" stroke="#1a0a05" stroke-width="1" fill="none"/>
-        <path d="M127 91 Q131 88 133 92" stroke="#1a0a05" stroke-width="1" fill="none"/>
-        
-        <!-- Nose -->
-        <path d="M96 112 Q100 118 104 112" stroke="#c8956a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-        <circle cx="94" cy="114" r="2.5" fill="#d4a078" opacity="0.5"/>
-        <circle cx="106" cy="114" r="2.5" fill="#d4a078" opacity="0.5"/>
-        
-        <!-- Mouth - animated -->
-        <g id="avatar-mouth-group">
-          <path id="avatar-mouth" d="M85 128 Q100 138 115 128" stroke="#c0415a" stroke-width="2.5" fill="rgba(192,65,90,0.15)" stroke-linecap="round"/>
-        </g>
-        
-        <!-- Cheek blush -->
-        <ellipse cx="68" cy="118" rx="12" ry="7" fill="#e8a0a0" opacity="0.25"/>
-        <ellipse cx="132" cy="118" rx="12" ry="7" fill="#e8a0a0" opacity="0.25"/>
-        
-        <!-- Hijab pin/brooch -->
-        <circle cx="100" cy="138" r="5" fill="#c9a84c" opacity="0.8"/>
-        <circle cx="100" cy="138" r="3" fill="#f0d080"/>
+        <circle cx="79.5" cy="97" r="4" fill="#0d0805"/>
+        <circle cx="121.5" cy="97" r="4" fill="#0d0805"/>
+
+        <!-- Eye shine - realistic -->
+        <circle cx="83" cy="93.5" r="2.2" fill="white" opacity="0.95"/>
+        <circle cx="125" cy="93.5" r="2.2" fill="white" opacity="0.95"/>
+        <circle cx="80" cy="99" r="1" fill="white" opacity="0.4"/>
+        <circle cx="122" cy="99" r="1" fill="white" opacity="0.4"/>
+
+        <!-- Upper eyelid line -->
+        <path d="M67 93 Q79 89 91 93" stroke="#1a0a05" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M109 93 Q121 89 133 93" stroke="#1a0a05" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+        <!-- Lower eyelid subtle -->
+        <path d="M68 101 Q79 104 90 101" stroke="rgba(100,50,20,0.35)" stroke-width="1" fill="none"/>
+        <path d="M110 101 Q121 104 132 101" stroke="rgba(100,50,20,0.35)" stroke-width="1" fill="none"/>
+
+        <!-- Eyelashes upper -->
+        <path d="M67 93 L65 90" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M70 91 L69 88" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M74 89.5 L74 86" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M79 89 L80 86" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M84 89.5 L86 87" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M88 91 L91 89" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+
+        <path d="M133 93 L135 90" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M130 91 L131 88" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M126 89.5 L126 86" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M121 89 L120 86" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M116 89.5 L114 87" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M112 91 L109 89" stroke="#0d0805" stroke-width="1.2" stroke-linecap="round"/>
+
+        <!-- Nose - delicate and realistic -->
+        <path d="M97 108 Q95 116 93 119 Q97 122 100 122 Q103 122 107 119 Q105 116 103 108" fill="rgba(180,100,50,0.08)"/>
+        <path d="M97 108 Q95 118 94 120" stroke="rgba(140,70,30,0.3)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M103 108 Q105 118 106 120" stroke="rgba(140,70,30,0.3)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M94 120 Q100 124 106 120" stroke="rgba(140,70,30,0.25)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+
+        <!-- Cheek blush - soft and natural -->
+        <ellipse cx="68" cy="112" rx="14" ry="9" fill="rgba(220,120,100,0.18)" filter="url(#softBlur)"/>
+        <ellipse cx="132" cy="112" rx="14" ry="9" fill="rgba(220,120,100,0.18)" filter="url(#softBlur)"/>
+
+        <!-- Lips - beautiful and full -->
+        <path d="M84 133 Q88 130 94 130 Q100 131 106 130 Q112 130 116 133" fill="rgba(180,70,70,0.15)" stroke="none"/>
+        <!-- Upper lip -->
+        <path d="M85 133 Q92 129 100 130 Q108 129 115 133 Q108 132 100 132.5 Q92 132 85 133Z" fill="#c0505a"/>
+        <!-- Lower lip - fuller -->
+        <path id="avatar-mouth" d="M85 133 Q100 142 115 133 Q108 138 100 139 Q92 138 85 133Z" fill="#d06068"/>
+        <!-- Lip shine -->
+        <ellipse cx="100" cy="137" rx="8" ry="2.5" fill="rgba(255,200,200,0.3)" filter="url(#softBlur)"/>
+        <path d="M91 131 Q100 130 109 131" stroke="rgba(255,200,200,0.4)" stroke-width="0.8" fill="none"/>
+
+        <!-- Face contour subtle -->
+        <path d="M50 100 Q50 130 65 148" stroke="rgba(180,100,50,0.08)" stroke-width="4" fill="none" filter="url(#softBlur)"/>
+        <path d="M150 100 Q150 130 135 148" stroke="rgba(180,100,50,0.08)" stroke-width="4" fill="none" filter="url(#softBlur)"/>
+
+        <!-- Hijab gold border/trim -->
+        <path d="M53 78 Q53 72 58 67 Q75 53 100 50 Q125 53 142 67 Q147 72 147 78" stroke="rgba(201,168,76,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+        <!-- Gold pin/brooch at bottom of hijab -->
+        <circle cx="100" cy="148" r="5" fill="#c9a84c" filter="url(#shadow)"/>
+        <circle cx="100" cy="148" r="3.5" fill="#f0d080"/>
+        <circle cx="100" cy="148" r="1.5" fill="#c9a84c"/>
       </svg>
     </div>
     <div class="zara-state-text" id="zara-state">Tap me to speak, Arbab</div>
