@@ -604,10 +604,23 @@ function doLogin() {
       try { loadGoogleAPIs(); } catch(e){} // non-blocking, after login
       try { localStorage.setItem('zara_last_visit', new Date().toISOString()); } catch(e){}
 
-      // Greet Arbab after short delay
+      // Load ElevenLabs key first, then greet
       setTimeout(function(){
-        try { openingGreeting(); } catch(e){}
-      }, 800);
+        try {
+          if (sb && !ELEVENLABS_KEY) {
+            sb.from('settings').select('elevenlabs_key').eq('id','arbab').single()
+            .then(function(r) {
+              if (r.data && r.data.elevenlabs_key) {
+                ELEVENLABS_KEY = r.data.elevenlabs_key;
+                localStorage.setItem('zara_eleven', ELEVENLABS_KEY);
+              }
+              openingGreeting();
+            }).catch(function(){ openingGreeting(); });
+          } else {
+            openingGreeting();
+          }
+        } catch(e){ openingGreeting(); }
+      }, 1200);
 
     } else {
       // ── WRONG CREDENTIALS ──
@@ -686,7 +699,6 @@ function loadSupabase() {
   s.onload = function() {
     try {
       sb = window.supabase.createClient(SB_URL, SB_KEY);
-      setTimeout(loadElevenKey, 1500);
     } catch(e) { sb = null; }
   };
   s.onerror = function() { sb = null; };
