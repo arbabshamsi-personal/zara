@@ -442,7 +442,7 @@
     <div class="zara-orb-wrap">
       <div class="orb-ring-2"></div>
       <div class="orb-ring"></div>
-      <div class="orb-main" id="zara-orb" onclick="toggleWhisper()">
+      <div class="orb-main" id="zara-orb" onclick="toggleVoice()">
         <span class="orb-letter">Z</span>
       </div>
     </div>
@@ -471,7 +471,7 @@
       <button class="icon-btn" onclick="clearConversation()" title="Fresh start">&#8635;</button>
       <input type="text" id="text-input" placeholder="Bolo Arbab bhai, main sun rahi hoon..." onkeydown="handleKey(event)">
       <button class="icon-btn" onclick="sendMessage()">&#8594;</button>
-      <button class="icon-btn" id="mic-btn" onclick="toggleWhisper()">&#127897;</button>
+      <button class="icon-btn" id="mic-btn" onclick="toggleVoice()">&#127897;</button>
     </div>
   </div>
 </div>
@@ -685,7 +685,8 @@ function loadSupabase() {
   s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
   s.onload = function() {
     try {
-      sb = window.supabase.createClient(SB_URL, SB_KEY); setTimeout(loadVoiceKeys, 1000);
+      sb = window.supabase.createClient(SB_URL, SB_KEY);
+      setTimeout(loadElevenKey, 1500);
     } catch(e) { sb = null; }
   };
   s.onerror = function() { sb = null; };
@@ -1180,7 +1181,7 @@ function informZaraAboutMeetings(events) {
     appendMessage('zara', reply, 'personal');
     conversationHistory.push({role:'assistant', content:reply});
     saveHistory();
-    speak(reply);
+    speakElevenLabs(reply);
   }).catch(function(){ removeTyping(tid); });
 }
 
@@ -1261,25 +1262,22 @@ async function addCalendarEvent(title, dateStr, timeStr, durationMins) {
 
 // Calendar button removed - use sidebar form instead
 
-// ElevenLabs + Whisper
-var OPENAI_KEY = localStorage.getItem('zara_openai') || '';
+
+// ElevenLabs Voice Output
 var ELEVENLABS_KEY = localStorage.getItem('zara_eleven') || '';
 var ELEVEN_VOICE = '21m00Tcm4TlvDq8ikWAM';
-var mediaRec = null;
-var audioChunks = [];
-var isRec = false;
 var curAudio = null;
 
-function loadVoiceKeys() {
-  if (OPENAI_KEY && ELEVENLABS_KEY) return;
-  if (!sb) { setTimeout(loadVoiceKeys, 2000); return; }
-  sb.from('settings').select('openai_key,elevenlabs_key').eq('id','arbab').single()
-  .then(function(r) {
-    if (r.data) {
-      if (r.data.openai_key) { OPENAI_KEY = r.data.openai_key; localStorage.setItem('zara_openai', OPENAI_KEY); }
-      if (r.data.elevenlabs_key) { ELEVENLABS_KEY = r.data.elevenlabs_key; localStorage.setItem('zara_eleven', ELEVENLABS_KEY); }
-    }
-  }).catch(function(){});
+function loadElevenKey() {
+  if (ELEVENLABS_KEY) return;
+  if (!sb) { setTimeout(loadElevenKey, 2000); return; }
+  sb.from('settings').select('elevenlabs_key').eq('id','arbab').single()
+    .then(function(r) {
+      if (r.data && r.data.elevenlabs_key) {
+        ELEVENLABS_KEY = r.data.elevenlabs_key;
+        localStorage.setItem('zara_eleven', ELEVENLABS_KEY);
+      }
+    }).catch(function(){});
 }
 
 async function speakElevenLabs(text) {
@@ -1287,7 +1285,7 @@ async function speakElevenLabs(text) {
   try {
     if (curAudio) { curAudio.pause(); curAudio = null; }
     setStatus('speaking');
-    var clean = text.split('\n').join('. ').replace(/[*_#]/g, '').trim().substring(0, 500);
+    var clean = text.replace(/[*_#]/g, '').trim().substring(0, 500);
     var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + ELEVEN_VOICE, {
       method: 'POST',
       headers: { 'xi-api-key': ELEVENLABS_KEY, 'Content-Type': 'application/json' },
@@ -1301,53 +1299,6 @@ async function speakElevenLabs(text) {
     curAudio.onerror = function() { setStatus('ready'); speak(text); };
     curAudio.play();
   } catch(e) { speak(text); }
-}
-
-function toggleWhisper() {
-  if (!OPENAI_KEY) { toggleVoice(); return; }
-  if (isRec) {
-    if (mediaRec && mediaRec.state !== 'inactive') mediaRec.stop();
-    isRec = false;
-    document.getElementById('mic-btn').classList.remove('active');
-    document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
-    setStatus('ready');
-  } else {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
-      audioChunks = [];
-      mediaRec = new MediaRecorder(stream);
-      mediaRec.ondataavailable = function(e) { if (e.data.size > 0) audioChunks.push(e.data); };
-      mediaRec.onstop = function() { stream.getTracks().forEach(function(t) { t.stop(); }); runWhisper(); };
-      mediaRec.start();
-      isRec = true;
-      document.getElementById('mic-btn').classList.add('active');
-      document.getElementById('mic-btn').textContent = String.fromCodePoint(9209);
-      setStatus('listening');
-      var vt = document.getElementById('voice-transcript');
-      vt.textContent = 'Sun rahi hoon...';
-      vt.classList.add('visible');
-    }).catch(function() { toggleVoice(); });
-  }
-}
-
-async function runWhisper() {
-  try {
-    var blob = new Blob(audioChunks, { type: 'audio/webm' });
-    var fd = new FormData();
-    fd.append('file', blob, 'rec.webm');
-    fd.append('model', 'whisper-1');
-    var res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + OPENAI_KEY },
-      body: fd
-    });
-    var data = await res.json();
-    var text = (data.text || '').trim();
-    var vt = document.getElementById('voice-transcript');
-    vt.textContent = text;
-    setTimeout(function() { vt.classList.remove('visible'); }, 3000);
-    if (text) { document.getElementById('text-input').value = text; setStatus('ready'); sendMessage(); }
-    else { setStatus('ready'); }
-  } catch(e) { setStatus('ready'); }
 }
 
 </script>
