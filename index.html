@@ -604,23 +604,10 @@ function doLogin() {
       try { loadGoogleAPIs(); } catch(e){} // non-blocking, after login
       try { localStorage.setItem('zara_last_visit', new Date().toISOString()); } catch(e){}
 
-      // Load ElevenLabs key first, then greet
+      // Greet Arbab after short delay
       setTimeout(function(){
-        try {
-          if (sb && !ELEVENLABS_KEY) {
-            sb.from('settings').select('elevenlabs_key').eq('id','arbab').single()
-            .then(function(r) {
-              if (r.data && r.data.elevenlabs_key) {
-                ELEVENLABS_KEY = r.data.elevenlabs_key;
-                localStorage.setItem('zara_eleven', ELEVENLABS_KEY);
-              }
-              openingGreeting();
-            }).catch(function(){ openingGreeting(); });
-          } else {
-            openingGreeting();
-          }
-        } catch(e){ openingGreeting(); }
-      }, 1200);
+        try { openingGreeting(); } catch(e){}
+      }, 800);
 
     } else {
       // ── WRONG CREDENTIALS ──
@@ -756,7 +743,7 @@ function openingGreeting() {
   let sawaal = h<5?'Kuch pareshan hai? Main hoon, bolo.':h<12?'Naashta kiya? Kuch plan hai aaj?':h<17?'Kha liya na? (Seriously — Monjaro ke saath khana zaroori hai 😊)':h<21?'Aaj kya achieve kiya? Batao — I want to know everything.':'Kal ke liye kuch sochna hai? Main hoon.';
   const g = salaam + (absence ? ' ' + absence : '') + ' ' + waqt + ' ' + sawaal;
   appendMessage('zara', g, 'emotional');
-  speakElevenLabs(g);
+  speak(g);
 }
 
 // ════════════════════════
@@ -780,7 +767,7 @@ async function sendMessage(userText) {
     saveHistory();
     sbSave('user', text, currentMode);
     sbSave('assistant', reply, currentMode);
-    speakElevenLabs(reply);
+    speak(reply);
   } catch(err) {
     removeTyping(tid);
     appendMessage('zara', 'Arbab bhai, kuch masla aa gaya — ' + err.message + '. Thodi der baad try karein.', 'personal');
@@ -943,12 +930,24 @@ function toggleVoice() {
 
 function getBestVoice() {
   const voices = synth.getVoices();
-  const priority = ['Google UK English Female','Samantha','Karen','Moira','Tessa','Victoria','Google US English'];
+  // Best female voices in priority order
+  const priority = [
+    'Google UK English Female',
+    'Microsoft Libby Online (Natural) - English (United Kingdom)',
+    'Microsoft Aria Online (Natural) - English (United States)',
+    'Microsoft Jenny Online (Natural) - English (United States)',
+    'Samantha','Karen','Moira','Tessa','Victoria',
+    'Google US English','Microsoft Zira - English (United States)'
+  ];
   for (const name of priority) {
-    const v = voices.find(function(v) { return v.name===name; });
+    const v = voices.find(function(v) { return v.name === name; });
     if (v) return v;
   }
-  return voices.find(function(v){return v.lang==='en-GB';}) || voices.find(function(v){return v.lang.startsWith('en');}) || voices[0];
+  // Fallback: any female English voice
+  return voices.find(function(v){ return v.lang==='en-GB' && v.name.toLowerCase().includes('female'); })
+      || voices.find(function(v){ return v.lang==='en-GB'; })
+      || voices.find(function(v){ return v.lang.startsWith('en'); })
+      || voices[0];
 }
 
 function speak(text) {
@@ -965,7 +964,7 @@ function speak(text) {
   const utt = new SpeechSynthesisUtterance(clean);
   const v = getBestVoice();
   if (v) utt.voice = v;
-  utt.rate = 0.88; utt.pitch = 1.0; utt.volume = 1.0;
+  utt.rate = 0.82; utt.pitch = 1.05; utt.volume = 1.0;
   utt.onstart = function(){setStatus('speaking');};
   utt.onend = function(){setStatus('ready');};
   utt.onerror = function(){setStatus('ready');};
@@ -1193,7 +1192,7 @@ function informZaraAboutMeetings(events) {
     appendMessage('zara', reply, 'personal');
     conversationHistory.push({role:'assistant', content:reply});
     saveHistory();
-    speakElevenLabs(reply);
+    speak(reply);
   }).catch(function(){ removeTyping(tid); });
 }
 
