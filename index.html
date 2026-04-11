@@ -726,6 +726,14 @@
 const ZARA_USER = 'arbabshamsi';
 const ZARA_PASS = 'Zaraisarbab';
 
+// ── VOICE AI ──
+const OPENAI_KEY = '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';
+const ELEVENLABS_KEY = 'sk_97517d27fe1a4490e0decb6789e300d68a3accb0b5fa0851';
+const ELEVENLABS_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
 // ── EMAILJS ──
 const EJS_SVC = 'service_1zlk16b';
 const EJS_TPL = 'template_5jz3b6w';
@@ -1050,7 +1058,7 @@ function openingGreeting() {
   let sawaal = h<5?'Kuch pareshan hai? Main hoon, bolo.':h<12?'Naashta kiya? Kuch plan hai aaj?':h<17?'Kha liya na? (Seriously — Monjaro ke saath khana zaroori hai 😊)':h<21?'Aaj kya achieve kiya? Batao — I want to know everything.':'Kal ke liye kuch sochna hai? Main hoon.';
   const g = salaam + (absence ? ' ' + absence : '') + ' ' + waqt + ' ' + sawaal;
   appendMessage('zara', g, 'emotional');
-  speak(g);
+  speakElevenLabs(g);
 }
 
 // ════════════════════════
@@ -1074,7 +1082,7 @@ async function sendMessage(userText) {
     saveHistory();
     sbSave('user', text, currentMode);
     sbSave('assistant', reply, currentMode);
-    speak(reply);
+    speakElevenLabs(reply);
 
     // After Zara responds, show one-click calendar card if meeting detected
     if (calConnected) {
@@ -1343,46 +1351,91 @@ function updateLastSeenDisplay() {
 }
 
 // ════════════════════════
-// VOICE
+// VOICE — WHISPER AI + ELEVENLABS
 // ════════════════════════
 function setupSpeechRecognition() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return;
-  recognition = new SR();
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.lang = 'en-IN';
-  recognition.onresult = function(e) {
-    const t = Array.from(e.results).map(r=>r[0].transcript).join('');
-    const vt = document.getElementById('voice-transcript');
-    vt.textContent = t; vt.classList.add('visible');
-    if (e.results[e.results.length-1].isFinal) {
-      document.getElementById('text-input').value = t;
-      vt.classList.remove('visible');
-      sendMessage();
-    }
-  };
-  recognition.onend = function() {
-    isListening = false;
-    document.getElementById('mic-btn').classList.remove('active');
-    document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
-    setStatus('ready');
-  };
-  recognition.onerror = function() { isListening=false; setStatus('ready'); };
+  // Whisper uses MediaRecorder — no setup needed here
 }
 
 function toggleVoice() {
-  if (!recognition) { alert('Voice not supported. Use Chrome.'); return; }
-  if (isListening) {
-    recognition.stop(); isListening=false;
-    document.getElementById('mic-btn').classList.remove('active');
-    document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
-    setStatus('ready');
+  if (isRecording) {
+    stopWhisperRecording();
   } else {
-    synth.cancel(); recognition.start(); isListening=true;
+    startWhisperRecording();
+  }
+}
+
+function startWhisperRecording() {
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    mediaRecorder.ondataavailable = function(e) {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
+    mediaRecorder.onstop = function() {
+      stream.getTracks().forEach(function(t) { t.stop(); });
+      sendToWhisper();
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    isListening = true;
     document.getElementById('mic-btn').classList.add('active');
     document.getElementById('mic-btn').textContent = String.fromCodePoint(9209);
     setStatus('listening');
+    var vt = document.getElementById('voice-transcript');
+    vt.textContent = 'Sun rahi hoon... (phir se click karein jab khatam ho)';
+    vt.classList.add('visible');
+  }).catch(function(e) {
+    showToast('Mic Error', 'Microphone access nahi mila. Browser settings check karein.');
+  });
+}
+
+function stopWhisperRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  isRecording = false;
+  isListening = false;
+  document.getElementById('mic-btn').classList.remove('active');
+  document.getElementById('mic-btn').textContent = String.fromCodePoint(127897);
+  var vt = document.getElementById('voice-transcript');
+  vt.textContent = 'Processing...';
+  setStatus('thinking');
+}
+
+async function sendToWhisper() {
+  try {
+    var blob = new Blob(audioChunks, { type: 'audio/webm' });
+    var formData = new FormData();
+    formData.append('file', blob, 'audio.webm');
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'en');
+    formData.append('prompt', 'Hinglish, Urdu words mixed with English. Names: Arbab, Pankaj, Zara, PHC, Ijlal.');
+
+    var res = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + OPENAI_KEY },
+      body: formData
+    });
+
+    var data = await res.json();
+    var text = data.text || '';
+
+    var vt = document.getElementById('voice-transcript');
+    vt.textContent = text;
+    setTimeout(function() { vt.classList.remove('visible'); }, 3000);
+
+    if (text.trim()) {
+      document.getElementById('text-input').value = text.trim();
+      setStatus('ready');
+      sendMessage();
+    } else {
+      setStatus('ready');
+      showToast('Whisper', 'Kuch sunai nahi diya. Dobara try karein.');
+    }
+  } catch(e) {
+    setStatus('ready');
+    showToast('Whisper Error', 'Voice process nahi hua: ' + e.message);
   }
 }
 
@@ -1394,6 +1447,55 @@ function getBestVoice() {
     if (v) return v;
   }
   return voices.find(function(v){return v.lang==='en-GB';}) || voices.find(function(v){return v.lang.startsWith('en');}) || voices[0];
+}
+
+let currentAudio = null;
+
+async function speakElevenLabs(text) {
+  try {
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    setStatus('speaking');
+    animateMouth(true);
+
+    var clean = text
+      .replace(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g, '')
+      .replace(/[*_#]/g, '')
+      .replace(/\n+/g, '. ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .substring(0, 500);
+
+    if (!clean) { setStatus('ready'); animateMouth(false); return; }
+
+    var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + ELEVENLABS_VOICE_ID, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': ELEVENLABS_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        text: clean,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true }
+      })
+    });
+
+    if (!res.ok) {
+      // Fallback to browser TTS
+      speak(text);
+      return;
+    }
+
+    var audioBlob = await res.blob();
+    var audioUrl = URL.createObjectURL(audioBlob);
+    currentAudio = new Audio(audioUrl);
+    currentAudio.onended = function() { setStatus('ready'); animateMouth(false); URL.revokeObjectURL(audioUrl); };
+    currentAudio.onerror = function() { setStatus('ready'); animateMouth(false); };
+    currentAudio.play();
+  } catch(e) {
+    // Fallback to browser TTS if ElevenLabs fails
+    speak(text);
+  }
 }
 
 let mouthInterval = null;
@@ -1936,7 +2038,7 @@ function triggerMeetingNotification(title, person, minsLeft) {
   }
   showToast('REMINDER', msg);
   appendMessage('zara', 'Arbab bhai! ⏰ ' + msg + ' Ready ho jao!', 'personal');
-  speak('Arbab bhai, reminder hai. ' + title + ' ' + minsLeft + ' minute mein hai.');
+  speakElevenLabs('Arbab bhai, reminder hai. ' + title + ' ' + minsLeft + ' minute mein hai.');
   // Also send email reminder
   zaraEmail(
     '⏰ Meeting Reminder: ' + title,
