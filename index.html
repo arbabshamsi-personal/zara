@@ -239,54 +239,11 @@
 
   .zara-state-text { text-align:center; font-family:'DM Mono',monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; height:16px; }
 
-  /* TALKING AVATAR */
-  .zara-avatar-wrap { position:relative; width:120px; height:120px; margin:0 auto; }
-  .avatar-face {
-    width:120px; height:120px; border-radius:50%;
-    background:radial-gradient(circle at 40% 35%, #f5deb3 0%, #deb887 40%, #c9a84c 70%, #a07830 100%);
-    position:relative; overflow:hidden;
-    box-shadow:0 4px 20px rgba(154,111,46,0.3), 0 0 0 3px rgba(154,111,46,0.2);
-  }
-  .avatar-eye-l, .avatar-eye-r {
-    position:absolute; width:14px; height:16px;
-    background:#3d2b1f; border-radius:50%;
-    top:38px;
-  }
-  .avatar-eye-l { left:32px; }
-  .avatar-eye-r { right:32px; }
-  .avatar-eye-l::after, .avatar-eye-r::after {
-    content:''; position:absolute; width:5px; height:5px;
-    background:#fff; border-radius:50%; top:3px; right:3px;
-  }
-  .avatar-nose {
-    position:absolute; width:10px; height:8px;
-    border:2px solid rgba(80,40,10,0.3); border-top:none;
-    border-radius:0 0 10px 10px;
-    top:58px; left:55px;
-  }
-  .avatar-mouth {
-    position:absolute; width:30px; height:8px;
-    border:2px solid #3d2b1f; border-top:none;
-    border-radius:0 0 15px 15px;
-    bottom:28px; left:45px;
-    transition:height 0.08s ease;
-    background:rgba(180,80,80,0.3);
-  }
-  .avatar-mouth.talking { height:16px; border-radius:0 0 15px 15px; }
-  .avatar-mouth.open { height:22px; }
-  .avatar-hijab {
-    position:absolute; inset:0; border-radius:50%;
-    background:linear-gradient(135deg, rgba(154,111,46,0.0) 0%, rgba(154,111,46,0.0) 40%, rgba(120,80,20,0.8) 65%, rgba(80,50,10,0.95) 100%);
-    top:55px;
-  }
-  .avatar-blink { animation:blinkEye 4s ease-in-out infinite; }
-  @keyframes blinkEye {
-    0%,90%,100% { transform:scaleY(1); }
-    95% { transform:scaleY(0.1); }
-  }
-  /* Orb rings around avatar */
+  /* HIJABI AVATAR */
+  .zara-avatar-wrap { position:relative; width:140px; height:140px; margin:0 auto; cursor:pointer; }
+  .avatar-svg { width:140px; height:140px; border-radius:50%; overflow:hidden; box-shadow:0 4px 24px rgba(154,111,46,0.35), 0 0 0 3px rgba(154,111,46,0.25); }
   .avatar-ring {
-    position:absolute; inset:-12px; border-radius:50%;
+    position:absolute; inset:-14px; border-radius:50%;
     border:1.5px solid rgba(154,111,46,0.25);
     animation:spin 8s linear infinite;
     pointer-events:none;
@@ -298,10 +255,16 @@
     box-shadow:0 0 8px var(--gold);
   }
   .avatar-ring-2 {
-    position:absolute; inset:-22px; border-radius:50%;
+    position:absolute; inset:-24px; border-radius:50%;
     border:1px solid rgba(109,79,160,0.1);
     animation:spin 16s linear infinite reverse;
     pointer-events:none;
+  }
+  .avatar-ring-2::after {
+    content:''; position:absolute; top:-3px; left:50%;
+    width:5px; height:5px; border-radius:50%;
+    background:var(--lavender); margin-left:-2.5px;
+    box-shadow:0 0 6px var(--lavender);
   }
 
   /* ── CONVERSATION ── */
@@ -521,16 +484,79 @@
 
   <!-- MAIN -->
   <div id="main">
-    <div class="zara-avatar-wrap" onclick="toggleVoice()" style="cursor:pointer;">
+    <div class="zara-avatar-wrap" onclick="toggleVoice()" id="zara-orb">
       <div class="avatar-ring-2"></div>
       <div class="avatar-ring"></div>
-      <div class="avatar-face" id="zara-orb">
-        <div class="avatar-eye-l avatar-blink"></div>
-        <div class="avatar-eye-r avatar-blink"></div>
-        <div class="avatar-nose"></div>
-        <div class="avatar-mouth" id="avatar-mouth"></div>
-        <div class="avatar-hijab"></div>
-      </div>
+      <svg class="avatar-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background -->
+        <circle cx="100" cy="100" r="100" fill="#f5e6d3"/>
+        
+        <!-- Hijab - back layer -->
+        <ellipse cx="100" cy="85" rx="72" ry="78" fill="#2c4a3e"/>
+        
+        <!-- Neck -->
+        <rect x="85" y="148" width="30" height="25" rx="8" fill="#e8c99a"/>
+        
+        <!-- Face -->
+        <ellipse cx="100" cy="105" rx="48" ry="55" fill="#e8c99a"/>
+        
+        <!-- Hijab - front drape -->
+        <path d="M28 108 Q30 160 100 175 Q170 160 172 108 Q160 125 130 132 Q115 136 100 136 Q85 136 70 132 Q40 125 28 108Z" fill="#2c4a3e"/>
+        
+        <!-- Hijab top -->
+        <path d="M35 85 Q35 40 100 35 Q165 40 165 85 Q155 68 130 62 Q115 58 100 58 Q85 58 70 62 Q45 68 35 85Z" fill="#1a3028"/>
+        
+        <!-- Hijab side folds -->
+        <path d="M35 85 Q28 108 28 108 Q38 95 52 90 Q60 87 70 86" fill="#1a3028" opacity="0.6"/>
+        <path d="M165 85 Q172 108 172 108 Q162 95 148 90 Q140 87 130 86" fill="#1a3028" opacity="0.6"/>
+        
+        <!-- Gold hijab accent -->
+        <path d="M52 78 Q100 68 148 78" stroke="#c9a84c" stroke-width="1.5" fill="none" opacity="0.6"/>
+        
+        <!-- Eyebrows -->
+        <path d="M68 88 Q78 84 88 86" stroke="#3d2010" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M112 86 Q122 84 132 88" stroke="#3d2010" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        
+        <!-- Eyes whites -->
+        <ellipse cx="78" cy="98" rx="11" ry="9" fill="white"/>
+        <ellipse cx="122" cy="98" rx="11" ry="9" fill="white"/>
+        
+        <!-- Iris -->
+        <circle cx="78" cy="98" r="7" fill="#3d2010"/>
+        <circle cx="122" cy="98" r="7" fill="#3d2010"/>
+        
+        <!-- Pupil -->
+        <circle cx="79" cy="98" r="4" fill="#1a0a05"/>
+        <circle cx="123" cy="98" r="4" fill="#1a0a05"/>
+        
+        <!-- Eye shine -->
+        <circle cx="82" cy="95" r="2" fill="white" opacity="0.9"/>
+        <circle cx="126" cy="95" r="2" fill="white" opacity="0.9"/>
+        
+        <!-- Eyelashes top -->
+        <path d="M67 92 Q70 88 73 91" stroke="#1a0a05" stroke-width="1" fill="none"/>
+        <path d="M85 90 Q89 87 91 90" stroke="#1a0a05" stroke-width="1" fill="none"/>
+        <path d="M111 90 Q115 87 117 90" stroke="#1a0a05" stroke-width="1" fill="none"/>
+        <path d="M127 91 Q131 88 133 92" stroke="#1a0a05" stroke-width="1" fill="none"/>
+        
+        <!-- Nose -->
+        <path d="M96 112 Q100 118 104 112" stroke="#c8956a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="94" cy="114" r="2.5" fill="#d4a078" opacity="0.5"/>
+        <circle cx="106" cy="114" r="2.5" fill="#d4a078" opacity="0.5"/>
+        
+        <!-- Mouth - animated -->
+        <g id="avatar-mouth-group">
+          <path id="avatar-mouth" d="M85 128 Q100 138 115 128" stroke="#c0415a" stroke-width="2.5" fill="rgba(192,65,90,0.15)" stroke-linecap="round"/>
+        </g>
+        
+        <!-- Cheek blush -->
+        <ellipse cx="68" cy="118" rx="12" ry="7" fill="#e8a0a0" opacity="0.25"/>
+        <ellipse cx="132" cy="118" rx="12" ry="7" fill="#e8a0a0" opacity="0.25"/>
+        
+        <!-- Hijab pin/brooch -->
+        <circle cx="100" cy="138" r="5" fill="#c9a84c" opacity="0.8"/>
+        <circle cx="100" cy="138" r="3" fill="#f0d080"/>
+      </svg>
     </div>
     <div class="zara-state-text" id="zara-state">Tap me to speak, Arbab</div>
 
@@ -1126,10 +1152,17 @@ function hideWelcome() { const w=document.getElementById('welcome-screen'); if(w
 function setStatus(state) {
   const orb = document.getElementById('zara-orb');
   const st = document.getElementById('zara-state');
-  orb.classList.remove('listening','speaking');
-  if (state==='thinking') { orb.classList.add('speaking'); st.textContent='Soch rahi hoon...'; }
-  else if (state==='speaking') { orb.classList.add('speaking'); st.textContent='Bol rahi hoon...'; }
-  else if (state==='listening') { orb.classList.add('listening'); st.textContent='Sun rahi hoon, Arbab...'; }
+  const svg = orb ? orb.querySelector('svg') : null;
+  if (svg) {
+    svg.style.transition = 'box-shadow 0.3s';
+    if (state==='thinking') { svg.style.boxShadow = '0 0 30px rgba(154,111,46,0.6), 0 0 0 3px rgba(154,111,46,0.4)'; }
+    else if (state==='speaking') { svg.style.boxShadow = '0 0 40px rgba(13,122,110,0.5), 0 0 0 3px rgba(13,122,110,0.3)'; }
+    else if (state==='listening') { svg.style.boxShadow = '0 0 40px rgba(45,212,191,0.6), 0 0 0 3px rgba(45,212,191,0.4)'; }
+    else { svg.style.boxShadow = '0 4px 24px rgba(154,111,46,0.35), 0 0 0 3px rgba(154,111,46,0.25)'; }
+  }
+  if (state==='thinking') { st.textContent='Soch rahi hoon...'; }
+  else if (state==='speaking') { st.textContent='Bol rahi hoon...'; }
+  else if (state==='listening') { st.textContent='Sun rahi hoon, Arbab...'; }
   else { st.textContent='Tap me to speak, Arbab'; }
 }
 
@@ -1212,11 +1245,18 @@ function animateMouth(talking) {
     var open = false;
     mouthInterval = setInterval(function() {
       open = !open;
-      mouth.style.height = open ? '18px' : '8px';
-    }, 120);
+      if (open) {
+        mouth.setAttribute('d', 'M85 126 Q100 142 115 126');
+        mouth.setAttribute('fill', 'rgba(100,20,30,0.8)');
+      } else {
+        mouth.setAttribute('d', 'M85 128 Q100 138 115 128');
+        mouth.setAttribute('fill', 'rgba(192,65,90,0.15)');
+      }
+    }, 130);
   } else {
     if (mouthInterval) { clearInterval(mouthInterval); mouthInterval = null; }
-    mouth.style.height = '8px';
+    mouth.setAttribute('d', 'M85 128 Q100 138 115 128');
+    mouth.setAttribute('fill', 'rgba(192,65,90,0.15)');
   }
 }
 
