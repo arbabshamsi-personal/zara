@@ -930,22 +930,24 @@ function toggleVoice() {
 
 function getBestVoice() {
   const voices = synth.getVoices();
-  // Best female voices in priority order
+  // Microsoft Natural voices are FREE and best quality on Windows
   const priority = [
-    'Google UK English Female',
-    'Microsoft Libby Online (Natural) - English (United Kingdom)',
     'Microsoft Aria Online (Natural) - English (United States)',
     'Microsoft Jenny Online (Natural) - English (United States)',
+    'Microsoft Libby Online (Natural) - English (United Kingdom)',
+    'Microsoft Sonia Online (Natural) - English (United Kingdom)',
+    'Microsoft Mia Online (Natural) - English (United Kingdom)',
+    'Google UK English Female',
+    'Google US English Female',
     'Samantha','Karen','Moira','Tessa','Victoria',
-    'Google US English','Microsoft Zira - English (United States)'
+    'Microsoft Zira - English (United States)',
+    'Microsoft Hazel - English (Great Britain)'
   ];
   for (const name of priority) {
     const v = voices.find(function(v) { return v.name === name; });
     if (v) return v;
   }
-  // Fallback: any female English voice
-  return voices.find(function(v){ return v.lang==='en-GB' && v.name.toLowerCase().includes('female'); })
-      || voices.find(function(v){ return v.lang==='en-GB'; })
+  return voices.find(function(v){ return v.lang==='en-GB'; })
       || voices.find(function(v){ return v.lang.startsWith('en'); })
       || voices[0];
 }
