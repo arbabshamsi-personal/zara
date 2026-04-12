@@ -186,6 +186,7 @@
   #main { grid-area:main; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding:0 28px; }
 
   .zara-orb-wrap { position:relative; width:var(--orb-size); height:var(--orb-size); margin:20px auto 12px; flex-shrink:0; }
+  #zara-orb { transition: box-shadow 0.3s; }
   .orb-ring {
     position:absolute; inset:-18px; border-radius:50%;
     border:1px solid rgba(154,111,46,0.2); animation:spin 8s linear infinite;
@@ -439,12 +440,57 @@
 
   <!-- MAIN -->
   <div id="main">
-    <div class="zara-orb-wrap">
+    <div class="zara-orb-wrap" onclick="toggleVoice()" style="cursor:pointer;">
       <div class="orb-ring-2"></div>
       <div class="orb-ring"></div>
-      <div class="orb-main" id="zara-orb" onclick="toggleVoice()">
-        <span class="orb-letter">Z</span>
-      </div>
+      <svg id="zara-orb" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="width:140px;height:140px;border-radius:50%;box-shadow:0 0 40px rgba(154,111,46,0.25),0 0 0 3px rgba(154,111,46,0.2);">
+        <defs>
+          <radialGradient id="skin" cx="42%" cy="38%" r="65%">
+            <stop offset="0%" stop-color="#fce8c8"/>
+            <stop offset="50%" stop-color="#f0c898"/>
+            <stop offset="100%" stop-color="#d4935a"/>
+          </radialGradient>
+          <radialGradient id="hijab" cx="40%" cy="25%" r="70%">
+            <stop offset="0%" stop-color="#1a4a3a"/>
+            <stop offset="60%" stop-color="#0d2e22"/>
+            <stop offset="100%" stop-color="#081a14"/>
+          </radialGradient>
+          <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#f8ede0"/>
+            <stop offset="100%" stop-color="#e8d0b0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="100" r="100" fill="url(#bg)"/>
+        <ellipse cx="100" cy="80" rx="80" ry="85" fill="url(#hijab)"/>
+        <path d="M30 170 Q60 150 100 148 Q140 150 170 170 L200 200 L0 200Z" fill="url(#hijab)"/>
+        <path d="M38 95 Q36 120 40 140 Q50 165 100 172 Q150 165 160 140 Q164 120 162 95 Q155 75 100 70 Q45 75 38 95Z" fill="url(#skin)"/>
+        <path d="M38 95 Q36 120 40 140 Q50 165 100 172 Q150 165 160 140 Q164 120 162 95 Q155 75 100 70 Q45 75 38 95Z" fill="none" stroke="url(#hijab)" stroke-width="32"/>
+        <ellipse cx="78" cy="100" rx="12" ry="9" fill="white"/>
+        <ellipse cx="122" cy="100" rx="12" ry="9" fill="white"/>
+        <circle cx="78" cy="100" r="7" fill="#2d1005"/>
+        <circle cx="122" cy="100" r="7" fill="#2d1005"/>
+        <circle cx="81" cy="97" r="2.5" fill="white" opacity="0.9"/>
+        <circle cx="125" cy="97" r="2.5" fill="white" opacity="0.9"/>
+        <path d="M67 92 Q78 87 89 92" stroke="#1a0a05" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M111 92 Q122 87 133 92" stroke="#1a0a05" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M67 91 L65 87" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M72 89 L71 85" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M78 88 L78 84" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M84 89 L85 85" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M89 91 L91 87" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M133 91 L135 87" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M128 89 L129 85" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M122 88 L122 84" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M116 89 L115 85" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M111 91 L109 87" stroke="#080402" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M94 116 Q98 120 100 120 Q102 120 106 116" stroke="rgba(160,90,40,0.3)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="68" cy="118" rx="12" ry="7" fill="rgba(220,110,100,0.15)"/>
+        <ellipse cx="132" cy="118" rx="12" ry="7" fill="rgba(220,110,100,0.15)"/>
+        <path id="avatar-mouth" d="M82 135 Q100 146 118 135 Q110 142 100 143 Q90 142 82 135Z" fill="#c0415a"/>
+        <path d="M55 80 Q100 65 145 80" stroke="rgba(201,168,76,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="100" cy="155" r="5" fill="#c9a84c"/>
+        <circle cx="100" cy="155" r="3" fill="#f0d060"/>
+      </svg>
     </div>
     <div class="zara-state-text" id="zara-state">Tap me to speak, Arbab</div>
 
@@ -861,11 +907,37 @@ function hideWelcome() { const w=document.getElementById('welcome-screen'); if(w
 function setStatus(state) {
   const orb = document.getElementById('zara-orb');
   const st = document.getElementById('zara-state');
-  orb.classList.remove('listening','speaking');
-  if (state==='thinking') { orb.classList.add('speaking'); st.textContent='Soch rahi hoon...'; }
-  else if (state==='speaking') { orb.classList.add('speaking'); st.textContent='Bol rahi hoon...'; }
-  else if (state==='listening') { orb.classList.add('listening'); st.textContent='Sun rahi hoon, Arbab...'; }
-  else { st.textContent='Tap me to speak, Arbab'; }
+  if (state==='thinking') {
+    orb.style.boxShadow = '0 0 40px rgba(154,111,46,0.6), 0 0 0 3px rgba(154,111,46,0.4)';
+    st.textContent = 'Thinking...';
+  } else if (state==='speaking') {
+    orb.style.boxShadow = '0 0 50px rgba(13,122,110,0.5), 0 0 0 3px rgba(13,122,110,0.3)';
+    st.textContent = 'Speaking...';
+    animateMouth(true);
+  } else if (state==='listening') {
+    orb.style.boxShadow = '0 0 50px rgba(45,212,191,0.6), 0 0 0 3px rgba(45,212,191,0.4)';
+    st.textContent = 'Listening...';
+  } else {
+    orb.style.boxShadow = '0 0 40px rgba(154,111,46,0.25), 0 0 0 3px rgba(154,111,46,0.2)';
+    st.textContent = 'Tap me to speak, Arbab';
+    animateMouth(false);
+  }
+}
+
+var mouthAnim = null;
+function animateMouth(on) {
+  var m = document.getElementById('avatar-mouth');
+  if (!m) return;
+  if (on) {
+    var open = false;
+    mouthAnim = setInterval(function() {
+      open = !open;
+      m.setAttribute('d', open ? 'M82 133 Q100 148 118 133 Q110 144 100 145 Q90 144 82 133Z' : 'M82 135 Q100 146 118 135 Q110 142 100 143 Q90 142 82 135Z');
+    }, 130);
+  } else {
+    if (mouthAnim) { clearInterval(mouthAnim); mouthAnim = null; }
+    if (m) m.setAttribute('d', 'M82 135 Q100 146 118 135 Q110 142 100 143 Q90 142 82 135Z');
+  }
 }
 
 function addToHistorySidebar(text) {
